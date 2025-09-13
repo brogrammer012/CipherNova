@@ -85,10 +85,12 @@ const Hero = () => {
         </div>
 
         <div className="hero-buttons animate-fadeIn">
-          <PrimaryButton 
-            text="Check a Real Message" 
-            onClick={() => console.log('Check message clicked')}
-          />
+          <Link to="/signup" style={{ textDecoration: 'none' }}>
+            <PrimaryButton 
+              text="Check a Real Message" 
+              onClick={() => console.log('Check message clicked')}
+            />
+          </Link>
           <Link to="/signup" style={{ textDecoration: 'none' }}>
             <SecondaryButton 
               text="Start Training" 
