@@ -1,0 +1,52 @@
+.app {
+  min-height: 100vh;
+  background: #000000;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Global transition styles for smooth page navigation */
+.page-transition-enter {
+  opacity: 0;
+  transform: translateX(100px);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 300ms ease-out, transform 300ms ease-out;
+}
+
+.page-transition-exit {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.page-transition-exit-active {
+  opacity: 0;
+  transform: translateX(-100px);
+  transition: opacity 300ms ease-out, transform 300ms ease-out;
+}
+
+/* Ensure consistent scrollbar styling across pages */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #00CED1 #1E1E1E;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #1E1E1E;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #00FF7F, #00CED1);
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #00CED1, #00FF7F);
+}
