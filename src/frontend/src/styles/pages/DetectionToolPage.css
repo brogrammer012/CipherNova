@@ -171,7 +171,7 @@
 .tool-main {
   position: relative;
   z-index: 10;
-  padding: 3rem 0;
+  padding: 120px 0 2rem 0;
 }
 
 .tool-container {
@@ -180,9 +180,74 @@
   padding: 0 2rem;
 }
 
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 3rem;
+  padding: 2rem;
+  background: rgba(30, 30, 30, 0.95);
+  border: 2px solid #2A2A2A;
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+}
+
+.header-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #00CED1, #00FF7F);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000000;
+}
+
+.header-content {
+  flex: 1;
+  margin-left: 2rem;
+}
+
+.header-content h1 {
+  font-family: 'Orbitron', monospace;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 0.5rem 0;
+  text-shadow: 0 0 20px rgba(0, 206, 209, 0.3);
+}
+
+.header-content p {
+  color: #cccccc;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.community-btn {
+  background: rgba(0, 206, 209, 0.1);
+  border: 2px solid #00CED1;
+  color: #00CED1;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.community-btn:hover {
+  background: rgba(0, 206, 209, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 206, 209, 0.3);
+}
+
 .input-section {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: 2rem;
 }
 
 .input-card {
@@ -197,6 +262,56 @@
   transition: all 0.3s ease;
   width: 100%;
   max-width: 800px;
+  margin: 0 auto;
+}
+
+.type-selector-modern {
+  margin-bottom: 2rem;
+}
+
+.selector-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 1rem;
+  font-family: 'Orbitron', monospace;
+}
+
+.selector-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.type-btn {
+  background: rgba(42, 42, 42, 0.8);
+  border: 2px solid #2A2A2A;
+  color: #cccccc;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  min-width: 120px;
+  justify-content: center;
+}
+
+.type-btn:hover {
+  border-color: #00CED1;
+  color: #00CED1;
+  background: rgba(0, 206, 209, 0.1);
+  transform: translateY(-2px);
+}
+
+.type-btn.active {
+  background: linear-gradient(135deg, #00CED1, #00FF7F);
+  border-color: #00CED1;
+  color: #000000;
+  box-shadow: 0 8px 25px rgba(0, 206, 209, 0.3);
 }
 
 .input-card:hover {

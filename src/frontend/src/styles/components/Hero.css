@@ -6,6 +6,7 @@
   justify-content: center;
   background: linear-gradient(135deg, #000000 0%, #1E1E1E 100%);
   overflow: hidden;
+  padding-top: 80px;
 }
 
 .cyber-grid {

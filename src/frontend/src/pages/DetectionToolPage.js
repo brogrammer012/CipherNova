@@ -8,22 +8,17 @@ import {
   Clock, 
   Mail, 
   Link as LinkIcon, 
-  MessageCircle,
-  ArrowLeft,
   Flag,
-  Eye,
   Trash2,
-  ExternalLink,
-  Users,
-  Home,
-  Settings
+  Users
 } from 'lucide-react';
+import Navbar from '../components/Navbar';
 import CrowdBlacklist from '../components/CrowdBlacklist';
 import '../styles/pages/DetectionToolPage.css';
 
 const DetectionToolPage = () => {
   const [inputValue, setInputValue] = useState('');
-  const [inputType, setInputType] = useState('auto');
+  const [inputType, setInputType] = useState('email');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
   const [showCrowdBlacklist, setShowCrowdBlacklist] = useState(false);
@@ -207,39 +202,8 @@ const DetectionToolPage = () => {
         </div>
       </div>
 
-      {/* Header */}
-      <header className="tool-header">
-        <div className="header-content">
-          <div className="nav-links">
-            <Link to="/" className="nav-link">
-              <Home size={18} />
-              <span>Home</span>
-            </Link>
-            <Link to="/dashboard" className="nav-link">
-              <Settings size={18} />
-              <span>Dashboard</span>
-            </Link>
-            <Link to="/detection-tool" className="nav-link active">
-              <Shield size={18} />
-              <span>Detection Tool</span>
-            </Link>
-          </div>
-          
-          <div className="header-title">
-            <Shield size={32} />
-            <h1>Threat Detection Tool</h1>
-            <p>Analyze suspicious emails and links</p>
-          </div>
-
-          <button 
-            className="crowd-blacklist-btn"
-            onClick={() => setShowCrowdBlacklist(!showCrowdBlacklist)}
-          >
-            <Users size={20} />
-            <span>Community Reports</span>
-          </button>
-        </div>
-      </header>
+      {/* Navigation */}
+      <Navbar />
 
       {/* Main Content */}
       <main className="tool-main">
@@ -247,31 +211,60 @@ const DetectionToolPage = () => {
           {!analysisResult ? (
             /* Input Section */
             <div className="input-section">
+              {/* Page Header */}
+              <div className="page-header">
+                <div className="header-icon">
+                  <Shield size={48} />
+                </div>
+                <div className="header-content">
+                  <h1>Threat Detection Tool</h1>
+                  <p>Analyze suspicious emails and links to protect yourself from cyber threats</p>
+                </div>
+                <button 
+                  className="community-btn"
+                  onClick={() => setShowCrowdBlacklist(!showCrowdBlacklist)}
+                >
+                  <Users size={20} />
+                  <span>Community Reports</span>
+                </button>
+              </div>
+
               <div className="input-card">
                 <div className="input-header">
                   <h2>Submit Content for Analysis</h2>
-                  <p>Paste suspicious emails, links, or messages below</p>
+                  <p>Choose the type of content and paste it below for threat analysis</p>
                 </div>
 
                 <div className="input-controls">
-                  <div className="type-selector">
-                    <label>Content Type:</label>
-                    <select 
-                      value={inputType} 
-                      onChange={(e) => setInputType(e.target.value)}
-                      className="type-dropdown"
-                    >
-                      <option value="auto">Auto-detect</option>
-                      <option value="email">Email</option>
-                      <option value="link">Link/URL</option>
-                    </select>
+                  {/* Modern Type Selector */}
+                  <div className="type-selector-modern">
+                    <div className="selector-label">Content Type</div>
+                    <div className="selector-buttons">
+                      <button 
+                        className={`type-btn ${inputType === 'email' ? 'active' : ''}`}
+                        onClick={() => setInputType('email')}
+                      >
+                        <Mail size={20} />
+                        <span>Email</span>
+                      </button>
+                      <button 
+                        className={`type-btn ${inputType === 'link' ? 'active' : ''}`}
+                        onClick={() => setInputType('link')}
+                      >
+                        <LinkIcon size={20} />
+                        <span>Link</span>
+                      </button>
+                    </div>
                   </div>
 
                   <div className="input-area">
                     <textarea
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
-                      placeholder="Paste your suspicious content here..."
+                      placeholder={inputType === 'email' ? 
+                        "Paste the suspicious email content here..." : 
+                        "Paste the suspicious link or URL here..."
+                      }
                       className="content-input"
                       rows={8}
                     />
@@ -290,7 +283,7 @@ const DetectionToolPage = () => {
                     ) : (
                       <>
                         <Search size={20} />
-                        <span>Analyze Content</span>
+                        <span>Analyze {inputType === 'email' ? 'Email' : 'Link'}</span>
                       </>
                     )}
                   </button>

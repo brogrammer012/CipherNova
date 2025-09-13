@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, Shield, ArrowLeft, LogIn, AlertCircle } from 'lucide-react';
+import Navbar from '../components/Navbar';
 import '../styles/pages/LoginPage.css';
 
 const LoginPage = ({ onBack, onLogin }) => {
@@ -85,6 +86,7 @@ const LoginPage = ({ onBack, onLogin }) => {
 
   return (
     <div className="login-page">
+      <Navbar />
       <div className="login-background">
         <div className="cyber-grid"></div>
         <div className="floating-particles">

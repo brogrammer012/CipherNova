@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Home, Settings, LogOut, Menu, X, Shield } from 'lucide-react';
+import { LogOut, Menu, X } from 'lucide-react';
+import Navbar from '../components/Navbar';
 import WelcomeSection from '../components/dashboard/WelcomeSection';
 import DetectionTool from '../components/dashboard/DetectionTool';
 import GameAccess from '../components/dashboard/GameAccess';
@@ -34,64 +34,15 @@ const DashboardPage = ({ user = { firstName: 'Alex', level: 3, xp: 1200, maxXp: 
         </div>
       </div>
 
-      {/* Navigation Header */}
-      <nav className="dashboard-nav">
-        <div className="nav-container">
-          <div className="nav-brand">
-            <Link to="/" className="brand-link">
-              <div className="brand-icon">
-                <div className="shield-icon"></div>
-              </div>
-              <span className="brand-text">CyberPulse</span>
-            </Link>
-          </div>
+      {/* Navigation */}
+      <Navbar />
 
-          <div className="nav-links desktop-only">
-            <Link to="/" className="nav-link">
-              <Home size={18} />
-              <span>Home</span>
-            </Link>
-            <Link to="/dashboard" className="nav-link active">
-              <Settings size={18} />
-              <span>Dashboard</span>
-            </Link>
-            <Link to="/detection-tool" className="nav-link">
-              <Shield size={18} />
-              <span>Detection Tool</span>
-            </Link>
-          </div>
-
-          <div className="nav-actions">
-            <button className="logout-btn" onClick={handleLogout}>
-              <LogOut size={18} />
-              <span className="desktop-only">Logout</span>
-            </button>
-            <button 
-              className="mobile-menu-btn mobile-only"
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            >
-              {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      {/* Mobile Sidebar */}
-      <div className={`mobile-sidebar ${isSidebarOpen ? 'open' : ''}`}>
-        <div className="sidebar-content">
-          <Link to="/" className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
-            <Home size={18} />
-            <span>Home</span>
-          </Link>
-          <Link to="/dashboard" className="sidebar-link active" onClick={() => setIsSidebarOpen(false)}>
-            <Settings size={18} />
-            <span>Dashboard</span>
-          </Link>
-          <Link to="/detection-tool" className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
-            <Shield size={18} />
-            <span>Detection Tool</span>
-          </Link>
-        </div>
+      {/* Logout Button - Mobile */}
+      <div className="mobile-logout">
+        <button className="logout-btn" onClick={handleLogout}>
+          <LogOut size={18} />
+          <span>Logout</span>
+        </button>
       </div>
 
       {/* Main Content */}

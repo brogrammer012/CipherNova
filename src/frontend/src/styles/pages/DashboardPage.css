@@ -249,7 +249,44 @@
 
 /* Main Content */
 .dashboard-main {
-  padding: 2rem 0;
+  padding-top: 120px; /* Account for fixed nav */
+  min-height: calc(100vh - 120px);
+  position: relative;
+  z-index: 1;
+}
+
+.mobile-logout {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1001;
+  display: none;
+}
+
+.logout-btn {
+  background: rgba(255, 68, 68, 0.1);
+  border: 1px solid rgba(255, 68, 68, 0.3);
+  color: #ff4444;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.logout-btn:hover {
+  background: rgba(255, 68, 68, 0.2);
+  border-color: rgba(255, 68, 68, 0.5);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .mobile-logout {
+    display: block;
+  }
 }
 
 .dashboard-container {

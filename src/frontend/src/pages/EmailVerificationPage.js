@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Mail, CheckCircle, RefreshCw, ArrowLeft, Shield, Clock } from 'lucide-react';
+import Navbar from '../components/Navbar';
 import '../styles/pages/EmailVerificationPage.css';
 
 const EmailVerificationPage = ({ email, onBack, onVerified, onResend }) => {
@@ -91,6 +92,7 @@ const EmailVerificationPage = ({ email, onBack, onVerified, onResend }) => {
   if (isVerified) {
     return (
       <div className="verification-page">
+        <Navbar />
         <div className="verification-background">
           <div className="cyber-grid"></div>
           <div className="success-particles">
@@ -140,6 +142,7 @@ const EmailVerificationPage = ({ email, onBack, onVerified, onResend }) => {
 
   return (
     <div className="verification-page">
+      <Navbar />
       <div className="verification-background">
         <div className="cyber-grid"></div>
         <div className="floating-envelopes">
