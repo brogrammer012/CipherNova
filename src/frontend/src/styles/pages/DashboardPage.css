@@ -498,28 +498,66 @@
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 255, 127, 0.2);
+  border-radius: 8px;
   padding: 1rem;
-  background: rgba(0, 206, 209, 0.1);
-  border: 1px solid rgba(0, 206, 209, 0.2);
-  border-radius: 12px;
-  cursor: pointer;
   transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.badge-item.unlocked {
+  background: rgba(0, 255, 127, 0.1);
+  border-color: rgba(0, 255, 127, 0.4);
+}
+
+.badge-item.locked {
+  opacity: 0.5;
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .badge-item:hover {
-  transform: scale(1.05);
-  background: rgba(0, 206, 209, 0.15);
-  border-color: rgba(0, 206, 209, 0.4);
+  transform: translateY(-2px);
+}
+
+.badge-item.unlocked:hover {
+  background: rgba(0, 255, 127, 0.15);
+  border-color: rgba(0, 255, 127, 0.6);
+}
+
+.badge-content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .badge-icon {
   font-size: 1.5rem;
 }
 
+.lock-overlay {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  font-size: 1rem;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 50%;
+  padding: 2px;
+}
+
 .badge-name {
   font-size: 0.8rem;
   color: #cccccc;
   text-align: center;
+  font-weight: 500;
+}
+
+.badge-item.unlocked .badge-name {
+  color: #00FF7F;
+  font-weight: 600;
 }
 
 /* Recent Analyses Card */

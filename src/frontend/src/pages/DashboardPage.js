@@ -24,7 +24,7 @@ import { getDashboardData, getUserAnalyses, getLeaderboard, getCommunityReports,
 import '../styles/pages/DashboardPage.css';
 
 
-const DashboardPage = ({ user = { firstName: 'Alex', xp: 1200 } }) => {
+const DashboardPage = () => {
   const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState(null);
   const [recentAnalyses, setRecentAnalyses] = useState([]);
@@ -33,17 +33,63 @@ const DashboardPage = ({ user = { firstName: 'Alex', xp: 1200 } }) => {
   const [userStats, setUserStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Get user info from localStorage (set after login)
+  let user = { firstName: 'User', xp: 1200, reportsSubmitted: 0, analysesCompleted: 0, streakDays: 0 };
+  try {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      user = JSON.parse(userData);
+    }
+  } catch (e) {}
+
+  // Badge system - check which badges user has unlocked
+  const checkBadgeUnlock = (badge, userStats) => {
+    switch (badge.id) {
+      case 1: // First Report
+        return userStats.reportsSubmitted >= 1;
+      case 2: // Link Buster
+        return userStats.reportsSubmitted >= 10;
+      case 3: // Daily Streak
+        return userStats.streakDays >= 3;
+      case 4: // Better Safe
+        return userStats.analysesCompleted >= 5; // Report non-suspicious content
+      case 5: // 100 Pointer
+        return userStats.xp >= 100;
+      default:
+        return false;
+    }
+  };
+
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         // Simulate API calls with mock data for now
+        // All available badges from the system
+        const allBadges = [
+          { id: 1, name: 'First Report', icon: '🎯', description: 'Successfully reported a suspicious link' },
+          { id: 2, name: 'Link Buster', icon: '🔗', description: 'Reported 10 suspicious links' },
+          { id: 3, name: 'Daily Streak', icon: '🔥', description: 'Reported suspicious links 3 days in a row' },
+          { id: 4, name: 'Safety First', icon: '✅', description: 'Report a link not confirmed to be suspicious' },
+          { id: 5, name: '100 Pointer', icon: '💯', description: 'Earn 100 points' }
+        ];
+
+        // Mock user stats for badge checking
+        const userStats = {
+          xp: user.xp || 1200,
+          reportsSubmitted: user.reportsSubmitted || 2,
+          analysesCompleted: user.analysesCompleted || 8,
+          streakDays: user.streakDays || 1
+        };
+
+        // Add unlock status to badges
+        const badgesWithStatus = allBadges.map(badge => ({
+          ...badge,
+          unlocked: checkBadgeUnlock(badge, userStats)
+        }));
+
         const mockDashboardData = {
-          user: { firstName: 'Alex', xp: 1250 },
-          badges: [
-            { id: 1, name: 'First Analysis', icon: '🔍', description: 'Completed your first phishing analysis' },
-            { id: 2, name: 'Sharp Eye', icon: '👁️', description: 'Detected 10 high-risk threats' },
-            { id: 3, name: 'Community Helper', icon: '🤝', description: 'Reported 5 phishing attempts' }
-          ]
+          user: user,
+          badges: badgesWithStatus
         };
         
         const mockAnalyses = [
@@ -86,17 +132,7 @@ const DashboardPage = ({ user = { firstName: 'Alex', xp: 1200 } }) => {
     };
     
     fetchDashboardData();
-  }, []);
-
-
-  // Get user info from localStorage (set after login)
-  let user = { firstName: 'User', level: 3, xp: 1200, maxXp: 1500 };
-  try {
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      user = JSON.parse(userData);
-    }
-  } catch (e) {}
+  }, [user.firstName, user.xp]);
 
   const handleLogout = () => {
 
@@ -194,11 +230,14 @@ const DashboardPage = ({ user = { firstName: 'Alex', xp: 1200 } }) => {
                 </div>
               </div>
               <div className="badges-section">
-                <h3>Recent Badges</h3>
+                <h3>All Badges</h3>
                 <div className="badges-grid">
-                  {dashboardData?.badges?.slice(0, 3).map(badge => (
-                    <div key={badge.id} className="badge-item" title={badge.description}>
-                      <span className="badge-icon">{badge.icon}</span>
+                  {dashboardData?.badges?.map(badge => (
+                    <div key={badge.id} className={`badge-item ${badge.unlocked ? 'unlocked' : 'locked'}`} title={badge.description}>
+                      <div className="badge-content">
+                        <span className="badge-icon">{badge.icon}</span>
+                        {!badge.unlocked && <div className="lock-overlay">🔒</div>}
+                      </div>
                       <span className="badge-name">{badge.name}</span>
                     </div>
                   ))}
