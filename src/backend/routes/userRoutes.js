@@ -2,6 +2,7 @@ import express from 'express';
 import pkg from '../database/supabaseClient.js';
 const { supabase } = pkg;
 import { detectPhishingSignals } from '../utils/detectPhishingSignals.js';
+import whois from 'whois-json';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
