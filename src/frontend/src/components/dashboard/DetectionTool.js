@@ -41,7 +41,7 @@ const DetectionTool = () => {
     // Simulate analysis
     setTimeout(() => {
       setIsAnalyzing(false);
-      alert(`Analysis complete! Risk score: ${Math.floor(Math.random() * 100)}`);
+      console.log(`Analysis complete! Risk score: ${Math.floor(Math.random() * 100)}`);
       setInputValue('');
     }, 3000);
   };

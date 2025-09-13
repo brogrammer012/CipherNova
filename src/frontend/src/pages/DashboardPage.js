@@ -15,7 +15,6 @@ const DashboardPage = ({ user = { firstName: 'Alex', level: 3, xp: 1200, maxXp: 
   const handleLogout = () => {
     // In a real app, this would clear authentication tokens
     console.log('Logging out...');
-    alert('Logged out successfully!');
     window.location.href = '/';
   };
 
