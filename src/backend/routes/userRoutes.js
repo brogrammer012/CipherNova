@@ -91,6 +91,57 @@ router.post('/login', async (req, res) => {
     res.json({ message: 'Login successful.', token });
 });
 
+router.get('/user/badges/:userId', async (req, res) => {
+    const { userId } = req.params;
+    if (!userId) {
+        return res.status(400).json({ error: 'User ID is required.' });
+    }
+
+    try {
+        const { data, error } = await supabase
+            .from('UserBadges')
+            .select('*')
+            .eq('user_id', userId);
+
+        if (error) {
+            console.error('Supabase error fetching badges:', error);
+            return res.status(500).json({ error: 'Failed to fetch user badges.', details: error.message });
+        }
+
+        res.json({ userId, badges: data });
+    } catch (err) {
+        console.error('Server error fetching badges:', err);
+        res.status(500).json({ error: 'Server error fetching user badges.', details: err.message });
+    }
+});
+
+
+router.get('/user/xp/:userId', async (req, res) => {
+    const { userId } = req.params; // now using route parameter
+    if (!userId) {
+        return res.status(400).json({ error: 'User ID is required.' });
+    }
+
+    try {
+        const { data, error } = await supabase
+            .from('Users')
+            .select('xp')
+            .eq('id', userId)
+            .single();
+
+        if (error || !data) {
+            console.error('Supabase error fetching XP:', error);
+            return res.status(404).json({ error: 'User not found or failed to fetch XP.', details: error?.message });
+        }
+
+        res.json({ userId, xp: data.xp });
+    } catch (err) {
+        console.error('Server error fetching XP:', err);
+        res.status(500).json({ error: 'Server error fetching user XP.', details: err.message });
+    }
+});
+
+
 // Check phishing endpoint
 router.post('/checkPhishing', (req, res) => {
     const { message } = req.body;
