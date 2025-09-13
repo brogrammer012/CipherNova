@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Home, Settings, LogOut, Menu, X } from 'lucide-react';
-import WelcomeSection from './dashboard/WelcomeSection';
-import DetectionTool from './dashboard/DetectionTool';
-import GameAccess from './dashboard/GameAccess';
-import GamificationStats from './dashboard/GamificationStats';
-import Notifications from './dashboard/Notifications';
-import QuickLinks from './dashboard/QuickLinks';
-import './DashboardPage.css';
+import WelcomeSection from '../components/dashboard/WelcomeSection';
+import DetectionTool from '../components/dashboard/DetectionTool';
+import GameAccess from '../components/dashboard/GameAccess';
+import GamificationStats from '../components/dashboard/GamificationStats';
+import Notifications from '../components/dashboard/Notifications';
+import QuickLinks from '../components/dashboard/QuickLinks';
+import '../styles/pages/DashboardPage.css';
 
 const DashboardPage = ({ user = { firstName: 'Alex', level: 3, xp: 1200, maxXp: 1500 } }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);

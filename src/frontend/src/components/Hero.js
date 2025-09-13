@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Shield, Zap, Target } from 'lucide-react';
 import PrimaryButton from './PrimaryButton';
 import SecondaryButton from './SecondaryButton';
-import './Hero.css';
+import '../styles/components/Hero.css';
 
 const Hero = () => {
   const [particles, setParticles] = useState([]);

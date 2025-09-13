@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Bell, AlertTriangle, Info, CheckCircle, X, ExternalLink } from 'lucide-react';
-import './Notifications.css';
+import '../../styles/dashboard/Notifications.css';
 
 const Notifications = () => {
   const [notifications, setNotifications] = useState([

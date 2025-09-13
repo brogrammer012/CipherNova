@@ -1,9 +1,9 @@
 import React from 'react';
-import Hero from './Hero';
-import Features from './Features';
-import Gamification from './Gamification';
-import CTA from './CTA';
-import Footer from './Footer';
+import Hero from '../components/Hero';
+import Features from '../components/Features';
+import Gamification from '../components/Gamification';
+import CTA from '../components/CTA';
+import Footer from '../components/Footer';
 
 const LandingPage = () => {
   return (

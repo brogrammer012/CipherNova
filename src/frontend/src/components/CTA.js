@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { LogIn, UserPlus, Shield, Sparkles } from 'lucide-react';
 import PrimaryButton from './PrimaryButton';
 import SecondaryButton from './SecondaryButton';
-import './CTA.css';
+import '../styles/components/CTA.css';
 
 const CTA = () => {
   const [hoveredButton, setHoveredButton] = useState(null);

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Gamepad2, Play, Trophy, Flame, Target, Star } from 'lucide-react';
-import './GameAccess.css';
+import '../../styles/dashboard/GameAccess.css';
 
 const GameAccess = ({ user }) => {
   const gameStats = {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Settings, User, HelpCircle, BookOpen, Shield, ExternalLink } from 'lucide-react';
-import './QuickLinks.css';
+import '../../styles/dashboard/QuickLinks.css';
 
 const QuickLinks = () => {
   const links = [

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Trophy, Star, Zap, Target, Award, TrendingUp } from 'lucide-react';
-import './Gamification.css';
+import '../styles/components/Gamification.css';
 
 const Gamification = () => {
   const [animatedStats, setAnimatedStats] = useState({

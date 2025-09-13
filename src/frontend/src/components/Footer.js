@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Shield, Mail, Github, Twitter, ExternalLink } from 'lucide-react';
-import './Footer.css';
+import '../styles/components/Footer.css';
 
 const Footer = () => {
   const [hoveredIcon, setHoveredIcon] = useState(null);

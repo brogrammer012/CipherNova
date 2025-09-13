@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { User, Mail, Lock, Eye, EyeOff, Shield, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
-import './SignUpPage.css';
+import '../styles/pages/SignUpPage.css';
 
 const SignUpPage = ({ onBack, onSignUp }) => {
   const [formData, setFormData] = useState({

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Trophy, Medal, Zap, TrendingUp, Crown, Award } from 'lucide-react';
-import './GamificationStats.css';
+import '../../styles/dashboard/GamificationStats.css';
 
 const GamificationStats = ({ user }) => {
   const leaderboard = [

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Shield, Search, AlertTriangle, CheckCircle, Clock, Mail, Link as LinkIcon, MessageCircle } from 'lucide-react';
-import './DetectionTool.css';
+import '../../styles/dashboard/DetectionTool.css';
 
 const DetectionTool = () => {
   const [inputType, setInputType] = useState('email');

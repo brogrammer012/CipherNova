@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Mail, CheckCircle, RefreshCw, ArrowLeft, Shield, Clock } from 'lucide-react';
-import './EmailVerificationPage.css';
+import '../styles/pages/EmailVerificationPage.css';
 
 const EmailVerificationPage = ({ email, onBack, onVerified, onResend }) => {
   const [verificationCode, setVerificationCode] = useState(['', '', '', '', '', '']);

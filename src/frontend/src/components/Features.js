@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Gamepad2, Shield, Zap, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
-import './Features.css';
+import '../styles/components/Features.css';
 
 const Features = () => {
   const [hoveredCard, setHoveredCard] = useState(null);

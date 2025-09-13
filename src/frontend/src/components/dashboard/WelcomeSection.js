@@ -1,6 +1,6 @@
 import React from 'react';
 import { User, Settings, Star } from 'lucide-react';
-import './WelcomeSection.css';
+import '../../styles/dashboard/WelcomeSection.css';
 
 const WelcomeSection = ({ user }) => {
   const progressPercentage = (user.xp / user.maxXp) * 100;

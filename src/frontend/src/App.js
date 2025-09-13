@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import LandingPage from './components/LandingPage';
-import LoginPage from './components/LoginPage';
-import SignUpPage from './components/SignUpPage';
-import EmailVerificationPage from './components/EmailVerificationPage';
-import DashboardPage from './components/DashboardPage';
-import './App.css';
+import LandingPage from './pages/LandingPage';
+import LoginPage from './pages/LoginPage';
+import SignUpPage from './pages/SignUpPage';
+import EmailVerificationPage from './pages/EmailVerificationPage';
+import DashboardPage from './pages/DashboardPage';
+import './styles/App.css';
 
 const App = () => {
   const [userEmail, setUserEmail] = useState('');

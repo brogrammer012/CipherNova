@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, Shield, ArrowLeft, LogIn, AlertCircle } from 'lucide-react';
-import './LoginPage.css';
+import '../styles/pages/LoginPage.css';
 
 const LoginPage = ({ onBack, onLogin }) => {
   const [formData, setFormData] = useState({
