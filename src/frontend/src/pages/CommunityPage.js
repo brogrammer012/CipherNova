@@ -31,8 +31,15 @@ const CommunityPage = () => {
   const [reportedContent, setReportedContent] = useState([]);
   const [weeklyStats, setWeeklyStats] = useState({});
   const [topReporters, setTopReporters] = useState([]);
-  const [currentTipIndex, setCurrentTipIndex] = useState(0);
+  const [currentTip, setCurrentTip] = useState(0);
+  const [upvotedReports, setUpvotedReports] = useState(new Set());
   const [loading, setLoading] = useState(true);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10); // Number of items per page
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortConfig, setSortConfig] = useState({ key: 'dateReported', direction: 'desc' });
 
   const safetyTips = [
     {
@@ -70,70 +77,71 @@ const CommunityPage = () => {
   useEffect(() => {
     const fetchCommunityData = async () => {
       try {
-        // Mock data for community reports
+        // Load community reports from localStorage and merge with mock data
+        const userReports = JSON.parse(localStorage.getItem('communityReports') || '[]');
+        
+        // Mock data for demonstration
         const mockReports = [
           {
             id: 1,
-            type: 'email',
-            content: 'Urgent: Verify your NSFAS account immediately',
-            domain: 'nsfas-verify.tk',
+            type: 'Email',
+            content: 'Urgent: Your account will be suspended unless you verify immediately',
+            domain: 'fake-bank.com',
             riskLevel: 'high',
             reports: 23,
-            upvotes: 18,
-            dateReported: '2025-01-13',
-            reportedBy: 'CyberGuard23'
+            dateReported: '2024-01-15',
+            upvotes: 15
           },
           {
             id: 2,
-            type: 'link',
-            content: 'https://secure-fnb-login.ml/verify',
-            domain: 'secure-fnb-login.ml',
+            type: 'Link',
+            content: 'https://suspicious-site.net/login',
+            domain: 'suspicious-site.net',
             riskLevel: 'high',
-            reports: 31,
-            upvotes: 27,
-            dateReported: '2025-01-13',
-            reportedBy: 'SafetyFirst'
+            reports: 18,
+            dateReported: '2024-01-14',
+            upvotes: 12
           },
           {
             id: 3,
-            type: 'phone',
-            content: '+27 11 XXX XXXX - Claims to be from Capitec Bank',
-            domain: 'Phone Scam',
+            type: 'Phone',
+            content: '+1-555-SCAM-123 claiming to be from Microsoft',
+            domain: 'Unknown',
             riskLevel: 'medium',
-            reports: 12,
-            upvotes: 8,
-            dateReported: '2025-01-12',
-            reportedBy: 'PhishHunter'
+            reports: 8,
+            dateReported: '2024-01-13',
+            upvotes: 5
           },
           {
             id: 4,
-            type: 'email',
-            content: 'Congratulations! You\'ve won R50,000 lottery',
-            domain: 'sa-lottery-winner.ga',
+            type: 'Email',
+            content: 'You have won $1,000,000! Click here to claim',
+            domain: 'lottery-scam.org',
             riskLevel: 'high',
-            reports: 45,
-            upvotes: 41,
-            dateReported: '2025-01-12',
-            reportedBy: 'TechSavvy'
+            reports: 31,
+            dateReported: '2024-01-12',
+            upvotes: 22
           },
           {
             id: 5,
-            type: 'link',
-            content: 'https://whatsapp-verify.com/secure',
-            domain: 'whatsapp-verify.com',
+            type: 'Link',
+            content: 'https://phishing-example.com/secure-login',
+            domain: 'phishing-example.com',
             riskLevel: 'medium',
-            reports: 8,
-            upvotes: 6,
-            dateReported: '2025-01-11',
-            reportedBy: 'AlertUser'
+            reports: 6,
+            dateReported: '2024-01-11',
+            upvotes: 3
           }
         ];
+
+        // Combine user reports with mock data, user reports first
+        const allReports = [...userReports, ...mockReports];
+        setReportedContent(allReports);
 
         const mockStats = {
           totalReportsThisWeek: 89,
           newThreatsIdentified: 12,
-          communityMembers: 1247,
-          threatsBlocked: 156
+          communityMembers: 1247
         };
 
         const mockTopReporters = [
@@ -166,11 +174,11 @@ const CommunityPage = () => {
   };
 
   const nextTip = () => {
-    setCurrentTipIndex((prev) => (prev + 1) % safetyTips.length);
+    setCurrentTip((prev) => (prev + 1) % safetyTips.length);
   };
 
   const prevTip = () => {
-    setCurrentTipIndex((prev) => (prev - 1 + safetyTips.length) % safetyTips.length);
+    setCurrentTip((prev) => (prev - 1 + safetyTips.length) % safetyTips.length);
   };
 
   const getRiskColor = (level) => {
@@ -183,12 +191,46 @@ const CommunityPage = () => {
   };
 
   const getTypeIcon = (type) => {
-    switch (type) {
+    switch (type.toLowerCase()) {
       case 'email': return <Mail size={16} />;
       case 'link': return <LinkIcon size={16} />;
       case 'phone': return <Phone size={16} />;
-      default: return <AlertTriangle size={16} />;
+      default: return <Shield size={16} />;
     }
+  };
+
+  // Calculate pagination
+  const filteredReports = reportedContent.filter(report => 
+    report.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    report.domain.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    report.type.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const sortedReports = [...filteredReports].sort((a, b) => {
+    if (a[sortConfig.key] < b[sortConfig.key]) {
+      return sortConfig.direction === 'asc' ? -1 : 1;
+    }
+    if (a[sortConfig.key] > b[sortConfig.key]) {
+      return sortConfig.direction === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
+
+  const totalPages = Math.ceil(sortedReports.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = sortedReports.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Change page
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  // Handle sort
+  const requestSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
   };
 
   if (loading) {
@@ -249,15 +291,6 @@ const CommunityPage = () => {
               </div>
               <div className="stat-card">
                 <div className="stat-icon">
-                  <Shield size={24} />
-                </div>
-                <div className="stat-content">
-                  <span className="stat-number">{weeklyStats.threatsBlocked}</span>
-                  <span className="stat-label">Threats Blocked</span>
-                </div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-icon">
                   <Users size={24} />
                 </div>
                 <div className="stat-content">
@@ -287,11 +320,11 @@ const CommunityPage = () => {
               
               <div className="tip-card">
                 <div className="tip-icon">
-                  {safetyTips[currentTipIndex].icon}
+                  {safetyTips[currentTip].icon}
                 </div>
                 <div className="tip-content">
-                  <h3>{safetyTips[currentTipIndex].title}</h3>
-                  <p>{safetyTips[currentTipIndex].content}</p>
+                  <h3>{safetyTips[currentTip].title}</h3>
+                  <p>{safetyTips[currentTip].content}</p>
                 </div>
               </div>
               
@@ -304,8 +337,8 @@ const CommunityPage = () => {
               {safetyTips.map((_, index) => (
                 <button
                   key={index}
-                  className={`indicator ${index === currentTipIndex ? 'active' : ''}`}
-                  onClick={() => setCurrentTipIndex(index)}
+                  className={`indicator ${index === currentTip ? 'active' : ''}`}
+                  onClick={() => setCurrentTip(index)}
                 />
               ))}
             </div>
@@ -327,7 +360,7 @@ const CommunityPage = () => {
                     <span className="reporter-avatar">{reporter.avatar}</span>
                     <div className="reporter-details">
                       <h4>{reporter.name}</h4>
-                      <span className="reporter-level">{reporter.level}</span>
+                      {/* <span className="reporter-level">{reporter.level}</span> */}
                     </div>
                   </div>
                   <div className="reporter-stats">
@@ -348,10 +381,9 @@ const CommunityPage = () => {
                 <div className="header-cell risk">Risk Level</div>
                 <div className="header-cell reports">Reports</div>
                 <div className="header-cell date">Date</div>
-                <div className="header-cell actions">Actions</div>
               </div>
               
-              {reportedContent.map((report) => (
+              {currentItems.map((report) => (
                 <div key={report.id} className="table-row">
                   <div className="table-cell type">
                     <div className="type-indicator">
@@ -376,8 +408,7 @@ const CommunityPage = () => {
                     <span 
                       className="risk-badge" 
                       style={{ 
-                        backgroundColor: getRiskColor(report.riskLevel),
-                        color: '#ffffff'
+                        backgroundColor: getRiskColor(report.riskLevel)
                       }}
                     >
                       {report.riskLevel.toUpperCase()}
@@ -394,18 +425,21 @@ const CommunityPage = () => {
                       <span>{report.dateReported}</span>
                     </div>
                   </div>
-                  
-                  <div className="table-cell actions">
-                    <button 
-                      className="upvote-btn"
-                      onClick={() => handleUpvote(report.id)}
-                    >
-                      <ThumbsUp size={16} />
-                      <span>{report.upvotes}</span>
-                    </button>
-                  </div>
                 </div>
               ))}
+            </div>
+            <div className="pagination">
+              <button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>
+                Previous
+              </button>
+              {[...Array(totalPages).keys()].map((pageNumber) => (
+                <button key={pageNumber} onClick={() => paginate(pageNumber + 1)} className={currentPage === pageNumber + 1 ? 'active' : ''}>
+                  {pageNumber + 1}
+                </button>
+              ))}
+              <button onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages}>
+                Next
+              </button>
             </div>
           </div>
 
