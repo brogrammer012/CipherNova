@@ -1,3 +1,12 @@
+// WHOIS lookup API
+export async function whoisLookup(domain) {
+  const token = localStorage.getItem('token');
+  return axiosInstance.post('/whois', { domain }, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+}
 import axios from 'axios';
 
 const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';

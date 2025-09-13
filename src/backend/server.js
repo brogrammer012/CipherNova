@@ -5,6 +5,7 @@ import healthRoutes from './routes/healthCheck.js';
 import userRoutes from './routes/userRoutes.js';
 import communityRoutes from './routes/communityRoute.js';
 import urlRoutes from './routes/urlRoutes.js'; 
+import whoisRoutes from './routes/whoisRoutes.js';
 
 dotenv.config({ path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env.local' });
 
@@ -26,6 +27,8 @@ app.use('/', healthRoutes);
 app.use('/', userRoutes);
 app.use('/', communityRoutes);
 app.use('/', urlRoutes);
+app.use('/', whoisRoutes);
+
 // Simple test route
 app.get('/', (req, res) => {
     res.send('Server is running on port 3000!');
