@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Shield, Search, AlertTriangle, CheckCircle, Clock, Mail, Link as LinkIcon, MessageCircle } from 'lucide-react';
 import '../../styles/dashboard/DetectionTool.css';
 
@@ -86,58 +87,6 @@ const DetectionTool = () => {
           </div>
         </div>
 
-        <div className="detection-form">
-          <div className="input-type-selector">
-            <button 
-              className={`type-btn ${inputType === 'email' ? 'active' : ''}`}
-              onClick={() => setInputType('email')}
-            >
-              <Mail size={16} />
-              Email
-            </button>
-            <button 
-              className={`type-btn ${inputType === 'link' ? 'active' : ''}`}
-              onClick={() => setInputType('link')}
-            >
-              <LinkIcon size={16} />
-              Link
-            </button>
-            <button 
-              className={`type-btn ${inputType === 'message' ? 'active' : ''}`}
-              onClick={() => setInputType('message')}
-            >
-              <MessageCircle size={16} />
-              Message
-            </button>
-          </div>
-
-          <div className="input-section">
-            <textarea
-              className="detection-input"
-              placeholder={`Paste ${inputType} content here...`}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              rows={4}
-            />
-            <button 
-              className={`analyze-btn ${isAnalyzing ? 'analyzing' : ''}`}
-              onClick={handleAnalyze}
-              disabled={isAnalyzing || !inputValue.trim()}
-            >
-              {isAnalyzing ? (
-                <>
-                  <div className="spinner"></div>
-                  Analyzing...
-                </>
-              ) : (
-                <>
-                  <Search size={18} />
-                  Analyze Threat
-                </>
-              )}
-            </button>
-          </div>
-        </div>
 
         <div className="recent-analyses">
           <h3 className="analyses-title">Recent Analyses</h3>
@@ -162,6 +111,13 @@ const DetectionTool = () => {
                 </div>
               </div>
             ))}
+          </div>
+          
+          <div className="cta-section">
+            <Link to="/detection-tool" className="perform-analysis-btn">
+              <Search size={18} />
+              <span>Perform More Analyses</span>
+            </Link>
           </div>
         </div>
       </div>

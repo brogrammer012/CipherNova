@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Home, Settings, LogOut, Menu, X } from 'lucide-react';
+import { Home, Settings, LogOut, Menu, X, Shield } from 'lucide-react';
 import WelcomeSection from '../components/dashboard/WelcomeSection';
 import DetectionTool from '../components/dashboard/DetectionTool';
 import GameAccess from '../components/dashboard/GameAccess';
@@ -55,6 +55,10 @@ const DashboardPage = ({ user = { firstName: 'Alex', level: 3, xp: 1200, maxXp: 
               <Settings size={18} />
               <span>Dashboard</span>
             </Link>
+            <Link to="/detection-tool" className="nav-link">
+              <Shield size={18} />
+              <span>Detection Tool</span>
+            </Link>
           </div>
 
           <div className="nav-actions">
@@ -82,6 +86,10 @@ const DashboardPage = ({ user = { firstName: 'Alex', level: 3, xp: 1200, maxXp: 
           <Link to="/dashboard" className="sidebar-link active" onClick={() => setIsSidebarOpen(false)}>
             <Settings size={18} />
             <span>Dashboard</span>
+          </Link>
+          <Link to="/detection-tool" className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
+            <Shield size={18} />
+            <span>Detection Tool</span>
           </Link>
         </div>
       </div>

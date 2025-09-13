@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
 import EmailVerificationPage from './pages/EmailVerificationPage';
 import DashboardPage from './pages/DashboardPage';
+import DetectionToolPage from './pages/DetectionToolPage';
 import './styles/App.css';
 
 const App = () => {
@@ -81,6 +82,10 @@ const App = () => {
           <Route 
             path="/dashboard" 
             element={<DashboardPage />} 
+          />
+          <Route 
+            path="/detection-tool" 
+            element={<DetectionToolPage />} 
           />
           {/* Redirect any unknown routes to home */}
           <Route path="*" element={<Navigate to="/" replace />} />
