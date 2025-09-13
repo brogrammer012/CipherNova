@@ -23,7 +23,7 @@ import Navbar from '../components/Navbar';
 import { getDashboardData, getUserAnalyses, getLeaderboard, getCommunityReports, getUserStats } from '../api';
 import '../styles/pages/DashboardPage.css';
 
-const DashboardPage = ({ user = { firstName: 'Alex', level: 3, xp: 1200, maxXp: 1500 } }) => {
+const DashboardPage = ({ user = { firstName: 'Alex', xp: 1200 } }) => {
   const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState(null);
   const [recentAnalyses, setRecentAnalyses] = useState([]);
@@ -37,7 +37,7 @@ const DashboardPage = ({ user = { firstName: 'Alex', level: 3, xp: 1200, maxXp: 
       try {
         // Simulate API calls with mock data for now
         const mockDashboardData = {
-          user: { firstName: 'Alex', xp: 1250, level: 3, nextLevelXp: 1500 },
+          user: { firstName: 'Alex', xp: 1250 },
           badges: [
             { id: 1, name: 'First Analysis', icon: '🔍', description: 'Completed your first phishing analysis' },
             { id: 2, name: 'Sharp Eye', icon: '👁️', description: 'Detected 10 high-risk threats' },
@@ -53,9 +53,9 @@ const DashboardPage = ({ user = { firstName: 'Alex', level: 3, xp: 1200, maxXp: 
         ];
         
         const mockLeaderboard = [
-          { id: 1, name: 'Sarah Chen', xp: 2450, level: 5, avatar: '👩‍💻' },
-          { id: 2, name: 'Mike Johnson', xp: 2100, level: 4, avatar: '👨‍🔬' },
-          { id: 3, name: 'Alex Rivera', xp: 1250, level: 3, avatar: '👤' }
+          { id: 1, name: 'Sarah Chen', xp: 2450, avatar: '👩‍💻' },
+          { id: 2, name: 'Mike Johnson', xp: 2100, avatar: '👨‍🔬' },
+          { id: 3, name: 'Alex Rivera', xp: 1250, avatar: '👤' }
         ];
         
         const mockCommunityReports = [
@@ -173,24 +173,11 @@ const DashboardPage = ({ user = { firstName: 'Alex', level: 3, xp: 1200, maxXp: 
               <div className="xp-section">
                 <div className="xp-display">
                   <span className="current-xp">{dashboardData?.user?.xp || 0}</span>
-                  <span className="xp-label">XP</span>
+                  <span className="xp-label">XP Points</span>
                 </div>
-                <div className="level-info">
-                  <span className="level-badge">Level {dashboardData?.user?.level || 1}</span>
+                <div className="xp-description">
+                  <p>Keep analyzing threats to earn more points!</p>
                 </div>
-              </div>
-              <div className="progress-section">
-                <div className="progress-bar">
-                  <div 
-                    className="progress-fill" 
-                    style={{ 
-                      width: `${((dashboardData?.user?.xp || 0) / (dashboardData?.user?.nextLevelXp || 1500)) * 100}%` 
-                    }}
-                  ></div>
-                </div>
-                <p className="progress-text">
-                  {(dashboardData?.user?.nextLevelXp || 1500) - (dashboardData?.user?.xp || 0)} XP to next level
-                </p>
               </div>
               <div className="badges-section">
                 <h3>Recent Badges</h3>
@@ -209,7 +196,7 @@ const DashboardPage = ({ user = { firstName: 'Alex', level: 3, xp: 1200, maxXp: 
             <div className="dashboard-card recent-analyses-card">
               <div className="card-header">
                 <Shield className="card-icon" />
-                <h2>Recent Analyses</h2>
+                <h2>Your Recent Analyses</h2>
               </div>
               <div className="analyses-list">
                 {recentAnalyses.slice(0, 4).map(analysis => (
@@ -264,7 +251,6 @@ const DashboardPage = ({ user = { firstName: 'Alex', level: 3, xp: 1200, maxXp: 
                     </div>
                     <div className="user-stats">
                       <span className="xp">{user.xp} XP</span>
-                      <span className="level">L{user.level}</span>
                     </div>
                   </div>
                 ))}

@@ -441,13 +441,16 @@
   opacity: 0.8;
 }
 
-.level-badge {
-  background: linear-gradient(135deg, #00FF7F, #00CED1);
-  color: #000000;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-weight: 600;
+
+.xp-description {
+  margin-top: 0.5rem;
+}
+
+.xp-description p {
+  color: #cccccc;
   font-size: 0.9rem;
+  margin: 0;
+  opacity: 0.8;
 }
 
 .progress-section {
@@ -666,11 +669,6 @@
   font-size: 0.9rem;
 }
 
-.level {
-  color: #cccccc;
-  font-size: 0.8rem;
-  opacity: 0.8;
-}
 
 /* Community Reports Card */
 .reports-list {
