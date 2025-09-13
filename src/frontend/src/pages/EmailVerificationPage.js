@@ -115,7 +115,7 @@ const EmailVerificationPage = ({ email, onBack, onVerified, onResend }) => {
             
             <h1 className="success-title">Email Verified!</h1>
             <p className="success-message">
-              Welcome to PhishBuster+! Your account has been successfully created and verified.
+              Welcome to CyberPulse! Your account has been successfully created and verified.
             </p>
             
             <div className="success-features">

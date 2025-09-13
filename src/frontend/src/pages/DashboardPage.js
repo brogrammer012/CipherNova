@@ -43,7 +43,7 @@ const DashboardPage = ({ user = { firstName: 'Alex', level: 3, xp: 1200, maxXp: 
               <div className="brand-icon">
                 <div className="shield-icon"></div>
               </div>
-              <span className="brand-text">PhishBuster+</span>
+              <span className="brand-text">CyberPulse</span>
             </Link>
           </div>
 

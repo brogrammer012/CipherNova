@@ -1,4 +1,4 @@
-# PhishBuster+ - Cybersecurity Platform
+# CyberPulse - Cybersecurity Platform
 
 A futuristic, student-focused cybersecurity platform designed to help South African students defend against phishing attacks through interactive training and real-time threat detection.
 
@@ -79,8 +79,7 @@ npm run build
 
 ### Demo Credentials
 - **Email**: test@example.com
-- **Password**: password123
-- **Verification Code**: 123456
+-The **CyberPulse platform** is now running successfully at `http://localhost:3000` with the improved file structure. All routing, components, and styling are working perfectly with the new organization!
 
 ## 🗂 Project Structure
 

@@ -31,7 +31,7 @@ const Footer = () => {
                 onMouseEnter={() => setHoveredIcon('logo')}
                 onMouseLeave={() => setHoveredIcon(null)}
               />
-              <span className="brand-name">PhishBuster+</span>
+              <span className="brand-name">CyberPulse</span>
             </div>
             <p className="brand-tagline">
               Protecting South African students from cyber threats, one click at a time.
@@ -79,7 +79,7 @@ const Footer = () => {
         {/* Copyright Section */}
         <div className="footer-bottom">
           <div className="copyright">
-            <p>&copy; 2024 PhishBuster+. All rights reserved.</p>
+            <p>&copy; 2024 CyberPulse. All rights reserved.</p>
             <p className="university-note">
               Built for South African universities and students
             </p>

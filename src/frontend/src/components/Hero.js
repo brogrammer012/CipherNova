@@ -78,7 +78,7 @@ const Hero = () => {
           
           <p className="hero-subtitle">
             South African students are frequently targeted by phishing scams promising 
-            bursaries, jobs, and easy money. <strong>PhishBuster+</strong> teaches you to 
+            bursaries, jobs, and easy money. <strong>CyberPulse</strong> teaches you to 
             spot scams with interactive challenges and gives you a tool to check real 
             messages instantly.
           </p>

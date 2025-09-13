@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { User, Mail, Lock, Eye, EyeOff, Shield, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
 import '../styles/pages/SignUpPage.css';
 
@@ -119,7 +120,7 @@ const SignUpPage = ({ onBack, onSignUp }) => {
               <div className="brand-icon">
                 <Shield size={32} />
               </div>
-              <h1 className="brand-title">PhishBuster+</h1>
+              <h1 className="brand-title">CyberPulse</h1>
               <p className="signup-subtitle">Join the fight against phishing attacks</p>
             </div>
           </div>

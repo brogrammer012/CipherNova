@@ -76,8 +76,7 @@ const LoginPage = ({ onBack, onLogin }) => {
         if (onLogin) {
           onLogin(formData);
         }
-        // Navigate to dashboard (placeholder for now)
-        alert('Login successful! Dashboard coming soon...');
+        
       } else {
         setLoginError('Incorrect email or password. Please try again.');
       }
@@ -121,7 +120,7 @@ const LoginPage = ({ onBack, onLogin }) => {
               <div className="brand-icon">
                 <Shield size={32} />
               </div>
-              <h1 className="brand-title">PhishBuster+</h1>
+              <h1 className="brand-title">CyberPulse</h1>
               <p className="login-subtitle">Welcome back, cyber defender!</p>
             </div>
           </div>
