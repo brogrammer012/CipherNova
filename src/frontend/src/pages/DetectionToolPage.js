@@ -535,7 +535,7 @@ const DetectionToolPage = () => {
                             return analysisResult.riskScore;
                           })()}</span>
                           <span className="score-total">/100</span>
-                        </div> */}
+                        </div>
                       </div>
                     </div>
                         <div className="risk-bar">
