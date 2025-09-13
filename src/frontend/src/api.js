@@ -50,8 +50,8 @@ export async function getUserStats() {
   return axiosInstance.get('/user/stats');
 }
 
-export async function getUserXp() {
-  return axiosInstance.get('/user/xp');
+export async function getUserXp(userId) {
+  return axiosInstance.get(`/user/xp/${userId}`);
 }
 
 // Community API endpoints
