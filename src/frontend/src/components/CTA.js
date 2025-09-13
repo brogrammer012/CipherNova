@@ -105,7 +105,7 @@ const CTA = () => {
             </div>
           </div>
 
-          <div className="cta-features">
+          {/* <div className="cta-features">
             <div className="feature-item">
               <LogIn size={20} />
               <span>Track Your Progress</span>
@@ -118,7 +118,7 @@ const CTA = () => {
               <Shield size={20} />
               <span>Access Detection Tools</span>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </section>

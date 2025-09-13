@@ -8,27 +8,6 @@ const Features = () => {
   const features = [
     {
       id: 1,
-      title: "Educational Game",
-      description: "Play mini-games to recognize phishing patterns. Levels increase in difficulty: Obvious scams → Job/bursary scams → Subtle spear-phishing.",
-      icon: Gamepad2,
-      color: "#00FF7F",
-      interactive: (
-        <div className="game-demo">
-          <div className="choice-buttons">
-            <button className="accept-btn">
-              <CheckCircle size={16} />
-              Accept
-            </button>
-            <button className="reject-btn">
-              <XCircle size={16} />
-              Reject
-            </button>
-          </div>
-        </div>
-      )
-    },
-    {
-      id: 2,
       title: "Detection Tool",
       description: "Paste a suspicious email, DM, or SMS and get an instant risk score. Highlights red flags and explains why it's risky.",
       icon: Shield,
@@ -44,6 +23,27 @@ const Features = () => {
             <button className="scan-btn">
               <Zap size={16} />
               Scan
+            </button>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 2,
+      title: "Educational Game",
+      description: "Play mini-games to recognize phishing patterns. Levels increase in difficulty: Obvious scams → Job/bursary scams → Subtle spear-phishing.",
+      icon: Gamepad2,
+      color: "#00FF7F",
+      interactive: (
+        <div className="game-demo">
+          <div className="choice-buttons">
+            <button className="accept-btn">
+              <CheckCircle size={16} />
+              Accept
+            </button>
+            <button className="reject-btn">
+              <XCircle size={16} />
+              Reject
             </button>
           </div>
         </div>
