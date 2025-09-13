@@ -1,0 +1,411 @@
+.gamification-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.stats-card {
+  background: rgba(30, 30, 30, 0.95);
+  border: 2px solid #2A2A2A;
+  border-radius: 12px;
+  padding: 1.5rem;
+  backdrop-filter: blur(10px);
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(0, 206, 209, 0.1);
+  transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+  border-color: rgba(0, 206, 209, 0.3);
+  box-shadow: 
+    0 12px 35px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(0, 206, 209, 0.2),
+    0 0 15px rgba(0, 206, 209, 0.1);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.header-icon {
+  width: 35px;
+  height: 35px;
+  background: linear-gradient(135deg, #00CED1, #00FF7F);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000000;
+}
+
+.card-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+  text-shadow: 0 0 10px rgba(0, 206, 209, 0.3);
+}
+
+/* XP Progress Card */
+.xp-chart {
+  display: flex;
+  align-items: end;
+  gap: 0.5rem;
+  height: 120px;
+  margin-bottom: 1rem;
+  padding: 0 0.5rem;
+}
+
+.xp-bar-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  height: 100%;
+}
+
+.xp-bar {
+  width: 100%;
+  background: linear-gradient(180deg, #00FF7F, #00CED1);
+  border-radius: 4px 4px 0 0;
+  position: relative;
+  min-height: 20px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 0.25rem;
+  transition: all 0.3s ease;
+}
+
+.xp-bar:hover {
+  transform: scaleY(1.05);
+  box-shadow: 0 0 15px rgba(0, 255, 127, 0.5);
+}
+
+.xp-value {
+  color: #000000;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.xp-day {
+  color: #888888;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.total-weekly {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: #1E1E1E;
+  border-radius: 8px;
+  border: 1px solid #2A2A2A;
+}
+
+.total-label {
+  color: #cccccc;
+  font-size: 0.9rem;
+}
+
+.total-value {
+  color: #00FF7F;
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+/* Leaderboard Card */
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.leaderboard-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: #1E1E1E;
+  border: 1px solid #2A2A2A;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.leaderboard-item:hover {
+  border-color: #00CED1;
+  background: #252525;
+  transform: translateX(3px);
+}
+
+.leaderboard-item.current-user {
+  border-color: #00FF7F;
+  background: rgba(0, 255, 127, 0.05);
+}
+
+.player-rank {
+  width: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.crown {
+  color: #ffd700;
+}
+
+.silver {
+  color: #c0c0c0;
+}
+
+.bronze {
+  color: #cd7f32;
+}
+
+.rank-number {
+  color: #888888;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.player-avatar {
+  width: 35px;
+  height: 35px;
+  background: linear-gradient(135deg, #00CED1, #00FF7F);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.player-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.player-name {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.player-xp {
+  color: #888888;
+  font-size: 0.8rem;
+  font-family: 'Orbitron', monospace;
+}
+
+/* Achievements Card */
+.achievements-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.achievement-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: #1E1E1E;
+  border: 1px solid #2A2A2A;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.achievement-item.earned {
+  border-color: #00FF7F;
+  background: rgba(0, 255, 127, 0.05);
+}
+
+.achievement-item.locked {
+  opacity: 0.6;
+}
+
+.achievement-item:hover {
+  transform: translateY(-1px);
+}
+
+.achievement-icon {
+  width: 35px;
+  height: 35px;
+  background: linear-gradient(135deg, #00FF7F, #00CED1);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.achievement-item.locked .achievement-icon {
+  background: #2A2A2A;
+  filter: grayscale(1);
+}
+
+.achievement-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.achievement-name {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.achievement-desc {
+  color: #888888;
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+
+.earned-indicator {
+  width: 20px;
+  height: 20px;
+  background: #00FF7F;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000000;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+/* Quick Stats Card */
+.quick-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.quick-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #1E1E1E;
+  border: 1px solid #2A2A2A;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.quick-stat:hover {
+  border-color: #00CED1;
+  background: #252525;
+  transform: scale(1.02);
+}
+
+.quick-stat .stat-icon {
+  width: 35px;
+  height: 35px;
+  background: linear-gradient(135deg, #00CED1, #00FF7F);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.quick-stat .stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.quick-stat .stat-value {
+  color: #ffffff;
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.quick-stat .stat-label {
+  color: #888888;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+@media (max-width: 768px) {
+  .stats-card {
+    padding: 1rem;
+  }
+
+  .card-header {
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .header-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .card-title {
+    font-size: 1rem;
+  }
+
+  .xp-chart {
+    height: 100px;
+    gap: 0.25rem;
+  }
+
+  .xp-value {
+    font-size: 0.6rem;
+  }
+
+  .xp-day {
+    font-size: 0.7rem;
+  }
+
+  .quick-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .leaderboard-item,
+  .achievement-item,
+  .quick-stat {
+    padding: 0.5rem;
+  }
+
+  .player-avatar,
+  .achievement-icon,
+  .quick-stat .stat-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-card {
+    padding: 0.75rem;
+  }
+
+  .xp-chart {
+    height: 80px;
+  }
+
+  .total-weekly {
+    padding: 0.75rem;
+  }
+
+  .quick-stat .stat-value {
+    font-size: 1rem;
+  }
+}

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Shield, Zap, Target } from 'lucide-react';
 import PrimaryButton from './PrimaryButton';
 import SecondaryButton from './SecondaryButton';
@@ -88,10 +89,12 @@ const Hero = () => {
             text="Check a Real Message" 
             onClick={() => console.log('Check message clicked')}
           />
-          <SecondaryButton 
-            text="Start Training" 
-            onClick={() => console.log('Start training clicked')}
-          />
+          <Link to="/signup" style={{ textDecoration: 'none' }}>
+            <SecondaryButton 
+              text="Start Training" 
+              onClick={() => console.log('Start training clicked')}
+            />
+          </Link>
         </div>
       </div>
 

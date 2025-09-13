@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { LogIn, UserPlus, Shield, Sparkles } from 'lucide-react';
 import PrimaryButton from './PrimaryButton';
 import SecondaryButton from './SecondaryButton';
@@ -46,10 +47,12 @@ const CTA = () => {
               onMouseEnter={() => setHoveredButton('login')}
               onMouseLeave={() => setHoveredButton(null)}
             >
-              <PrimaryButton 
-                text="Login" 
-                onClick={() => console.log('Login clicked')}
-              />
+              <Link to="/login" style={{ textDecoration: 'none' }}>
+                <PrimaryButton 
+                  text="Login" 
+                  onClick={() => console.log('Login clicked')}
+                />
+              </Link>
               {hoveredButton === 'login' && (
                 <div className="button-particles">
                   {[...Array(8)].map((_, i) => (
@@ -75,10 +78,12 @@ const CTA = () => {
               onMouseEnter={() => setHoveredButton('signup')}
               onMouseLeave={() => setHoveredButton(null)}
             >
-              <SecondaryButton 
-                text="Sign Up" 
-                onClick={() => console.log('Sign up clicked')}
-              />
+              <Link to="/signup" style={{ textDecoration: 'none' }}>
+                <SecondaryButton 
+                  text="Sign Up" 
+                  onClick={() => console.log('Sign up clicked')}
+                />
+              </Link>
               {hoveredButton === 'signup' && (
                 <div className="button-particles">
                   {[...Array(8)].map((_, i) => (

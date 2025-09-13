@@ -1,0 +1,343 @@
+.game-access {
+  margin-bottom: 2rem;
+}
+
+.game-card {
+  background: rgba(30, 30, 30, 0.95);
+  border: 2px solid #2A2A2A;
+  border-radius: 16px;
+  padding: 2rem;
+  backdrop-filter: blur(10px);
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(0, 255, 127, 0.1);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.game-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #00FF7F, #00CED1, transparent);
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+.game-card:hover {
+  border-color: rgba(0, 255, 127, 0.3);
+  box-shadow: 
+    0 15px 40px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(0, 255, 127, 0.2),
+    0 0 20px rgba(0, 255, 127, 0.1);
+}
+
+.game-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.header-icon {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #00FF7F, #00CED1);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000000;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.header-content {
+  flex: 1;
+}
+
+.header-content h2 {
+  font-family: 'Orbitron', monospace;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 0.25rem 0;
+  text-shadow: 0 0 15px rgba(0, 255, 127, 0.3);
+}
+
+.game-subtitle {
+  color: #cccccc;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.game-level {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(0, 255, 127, 0.1);
+  border: 1px solid rgba(0, 255, 127, 0.3);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  color: #00FF7F;
+  font-weight: 600;
+  font-family: 'Orbitron', monospace;
+}
+
+.game-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat-item {
+  background: #1E1E1E;
+  border: 1px solid #2A2A2A;
+  border-radius: 10px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.stat-item:hover {
+  border-color: #00CED1;
+  background: #252525;
+  transform: translateY(-2px);
+}
+
+.stat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-icon.streak {
+  background: linear-gradient(135deg, #ff6b35, #ff8e53);
+  color: #000000;
+}
+
+.stat-icon.accuracy {
+  background: linear-gradient(135deg, #00FF7F, #00CED1);
+  color: #000000;
+}
+
+.stat-icon.badges {
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  color: #000000;
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-value {
+  font-family: 'Orbitron', monospace;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.stat-label {
+  color: #888888;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.next-scenario {
+  background: #1E1E1E;
+  border: 1px solid #2A2A2A;
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.next-scenario:hover {
+  border-color: #00FF7F;
+  background: #252525;
+}
+
+.scenario-info h3 {
+  font-family: 'Orbitron', monospace;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #00CED1;
+  margin: 0 0 0.5rem 0;
+}
+
+.scenario-name {
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+}
+
+.last-played {
+  color: #888888;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.play-btn {
+  background: #00FF7F;
+  border: none;
+  border-radius: 8px;
+  padding: 0.875rem 1.5rem;
+  color: #000000;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.play-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 255, 127, 0.3);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.recent-badges {
+  border-top: 1px solid #2A2A2A;
+  padding-top: 1.5rem;
+}
+
+.badges-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #00CED1;
+  margin: 0 0 1rem 0;
+}
+
+.badges-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.badge-item {
+  background: #1E1E1E;
+  border: 1px solid #2A2A2A;
+  border-radius: 8px;
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.badge-item:hover {
+  border-color: #00FF7F;
+  background: #252525;
+  transform: translateX(5px);
+}
+
+.badge-icon {
+  width: 35px;
+  height: 35px;
+  background: linear-gradient(135deg, #00FF7F, #00CED1);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.badge-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.badge-name {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.badge-earned {
+  color: #888888;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 768px) {
+  .game-card {
+    padding: 1.5rem;
+  }
+
+  .game-header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .header-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .header-content h2 {
+    font-size: 1.25rem;
+  }
+
+  .game-stats {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .next-scenario {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .play-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .game-card {
+    padding: 1rem;
+  }
+
+  .header-content h2 {
+    font-size: 1.1rem;
+  }
+
+  .stat-item {
+    padding: 0.75rem;
+  }
+
+  .stat-icon {
+    width: 35px;
+    height: 35px;
+  }
+
+  .stat-value {
+    font-size: 1.25rem;
+  }
+}
