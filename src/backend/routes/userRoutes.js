@@ -35,7 +35,7 @@ router.post('/register', async (req, res) => {
         // Insert new user
         const { data, error } = await supabase
             .from('Users')
-            .insert([{ name, surname, email, password: hashedPassword }]);
+            .insert([{ name, surname, email, password: hashedPassword, status: 'Verified' }]);
 
         if (error) {
             console.error('Supabase insert error:', error);
