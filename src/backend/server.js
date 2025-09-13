@@ -1,8 +1,10 @@
-// server.js
-import express from 'express';  // ES Modules syntax
+import express from 'express';
+import healthRoutes from './routes/healthCheck.js';
 
 const app = express();
 const PORT = 3000;
+
+app.use('/', healthRoutes);
 
 // Simple test route
 app.get('/', (req, res) => {
