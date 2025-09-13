@@ -72,11 +72,22 @@ const LoginPage = ({ onBack, onLogin }) => {
         password: formData.password,
       });
       setIsLoggingIn(false);
+      // Store token and user info in localStorage for ProtectedRoute and Dashboard
+      if (response.data && response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        // Store user info if available (customize as needed)
+        localStorage.setItem('user', JSON.stringify({
+          firstName: response.data.name || formData.email.split('@')[0],
+          level: 3,
+          xp: 1200,
+          maxXp: 1500
+        }));
+      }
       if (onLogin) {
         onLogin(formData);
       }
-      // Optionally redirect or show success message
-      alert('Login successful!');
+      // Redirect to dashboard
+      window.location.href = '/dashboard';
     } catch (error) {
       setIsLoggingIn(false);
       if (error.response && error.response.data && error.response.data.error) {

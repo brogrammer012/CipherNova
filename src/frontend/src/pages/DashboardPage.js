@@ -9,12 +9,21 @@ import Notifications from '../components/dashboard/Notifications';
 import QuickLinks from '../components/dashboard/QuickLinks';
 import '../styles/pages/DashboardPage.css';
 
-const DashboardPage = ({ user = { firstName: 'Alex', level: 3, xp: 1200, maxXp: 1500 } }) => {
+const DashboardPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  // Get user info from localStorage (set after login)
+  let user = { firstName: 'User', level: 3, xp: 1200, maxXp: 1500 };
+  try {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      user = JSON.parse(userData);
+    }
+  } catch (e) {}
+
   const handleLogout = () => {
-    // In a real app, this would clear authentication tokens
-    console.log('Logging out...');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     window.location.href = '/';
   };
 
