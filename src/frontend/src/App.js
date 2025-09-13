@@ -7,6 +7,7 @@ import EmailVerificationPage from './pages/EmailVerificationPage';
 import DashboardPage from './pages/DashboardPage';
 import DetectionToolPage from './pages/DetectionToolPage';
 import CommunityPage from './pages/CommunityPage';
+import LeaderboardPage from './pages/LeaderboardPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import './styles/App.css';
 
@@ -102,6 +103,14 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <CommunityPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route 
+            path="/leaderboard" 
+            element={
+              <ProtectedRoute>
+                <LeaderboardPage />
               </ProtectedRoute>
             }
           />
