@@ -51,3 +51,5 @@ function detectPhishingSignals(message) {
 
     return signals;
 }
+
+export { detectPhishingSignals };

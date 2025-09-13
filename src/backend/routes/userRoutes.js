@@ -1,5 +1,7 @@
 import express from 'express';
-import { supabase } from '../database/supabaseClient.js';
+import pkg from '../database/supabaseClient.js';
+const { supabase } = pkg;
+import { detectPhishingSignals } from '../utils/detectPhishingSignals.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
