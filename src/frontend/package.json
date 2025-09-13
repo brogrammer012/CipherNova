@@ -4,7 +4,7 @@
   "description": "Futuristic cybersecurity platform for South African students",
   "main": "index.js",
   "scripts": {
-    "start": "craco start",
+    "start": "set PORT=3001 && craco start",
     "build": "craco build",
     "test": "craco test",
     "eject": "react-scripts eject"
