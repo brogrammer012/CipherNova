@@ -1,0 +1,98 @@
+# ==========================
+# OS Files
+# ==========================
+# Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+ehthumbs.db
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+
+# ==========================
+# IDE / Editor
+# ==========================
+# VSCode
+.vscode/
+.history/
+*.code-workspace
+
+# JetBrains (IntelliJ, PyCharm, CLion, etc.)
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Eclipse
+.project
+.settings/
+.metadata/
+bin/
+
+# ==========================
+# Build / dependency directories
+# ==========================
+# Node.js / JavaScript
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dist/
+build/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Java / Gradle / Maven
+target/
+*.class
+*.war
+*.ear
+.gradle/
+build/
+
+# C / C++ / CMake
+*.o
+*.obj
+*.out
+*.a
+CMakeFiles/
+CMakeCache.txt
+
+# Rust
+/target/
+
+# Go
+/bin/
+/pkg/
+
+# Ruby
+*.gem
+.bundle/
+log/
+tmp/
+coverage/
+*.rbc
+
+# ==========================
+# Environment / config
+# ==========================
+.env
+.env.local
+.env.*.local

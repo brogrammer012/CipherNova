@@ -1,0 +1,16 @@
+# Ignore git and GitHub stuff
+.git
+.github
+
+# Ignore build outputs
+node_modules
+__pycache__
+target
+dist
+bin
+obj
+dist
+pkg
+.env
+.venv
+*.log
