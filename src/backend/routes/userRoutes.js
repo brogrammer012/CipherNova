@@ -94,10 +94,66 @@ router.post('/login', async (req, res) => {
 router.post('/checkPhishing', (req, res) => {
     const { message } = req.body;
     if (!message || typeof message !== 'string') {
-        return res.status(400).json({ error: 'Message is required and must be a string.' });
+        return res.status(400).json({
+            riskLevel: 'error',
+            riskScore: 0,
+            flags: ['Message is required and must be a string.'],
+            suggestions: [],
+            highlightedContent: '',
+            detectedType: 'unknown'
+        });
     }
     const signals = detectPhishingSignals(message);
-    res.json({ phishingSignals: signals, isPhishing: signals.length > 0 });
+    // Risk scoring logic (simple)
+    let riskScore = signals.length * 25;
+    let riskLevel = 'low';
+    if (riskScore >= 50) riskLevel = 'high';
+    else if (riskScore >= 25) riskLevel = 'medium';
+
+    // Suggestions based on risk
+    let suggestions = [];
+    if (riskLevel === 'high') {
+        suggestions = [
+            'Do not interact with this content',
+            'Delete immediately',
+            'Report to your institution\'s IT security team',
+            'Add to community blacklist to warn others'
+        ];
+    } else if (riskLevel === 'medium') {
+        suggestions = [
+            'Exercise caution before interacting',
+            'Verify sender through official channels',
+            'Do not provide personal information',
+            'Consider reporting if suspicious'
+        ];
+    } else {
+        suggestions = [
+            'Content appears relatively safe',
+            'Still verify sender if requesting information',
+            'Trust your instincts if something feels off'
+        ];
+    }
+
+    // Highlight signals in content
+    let highlightedContent = message;
+    signals.forEach(signal => {
+        // Simple highlight: wrap signal keywords in <mark>
+        const keyword = signal.split(' ')[0];
+        highlightedContent = highlightedContent.replace(new RegExp(keyword, 'gi'), `<mark>${keyword}</mark>`);
+    });
+
+    // Detect type
+    let detectedType = 'email';
+    if (message.startsWith('http') || message.includes('www.')) detectedType = 'link';
+
+    res.json({
+        riskLevel,
+        riskScore,
+        flags: signals,
+        suggestions,
+        highlightedContent,
+        detectedType
+    });
 });
 
 export default router;

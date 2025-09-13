@@ -15,10 +15,9 @@ function detectPhishingSignals(message) {
     });
 
     // Suspicious links
-    const suspiciousLinkPatterns = [
-        /https?:\/\/(bit\.ly|tinyurl\.com|goo\.gl|t\.co|ow\.ly|buff\.ly|shorturl\.at)\/[\w\d]+/i,
-        /https?:\/\/[^\s]+\.[^\s]+\.[^\s]+/i // double dot domain
-    ];
+        const suspiciousLinkPatterns = [
+            /https?:\/\/(bit\.ly|tinyurl\.com|goo\.gl|t\.co|ow\.ly|buff\.ly|shorturl\.at)\/[\w\d]+/i
+        ];
     suspiciousLinkPatterns.forEach(pattern => {
         if (pattern.test(message)) signals.push('Suspicious link detected');
     });
