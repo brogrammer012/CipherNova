@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { registerUser } from '../api';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Lock, Eye, EyeOff, Shield, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import '../styles/pages/SignUpPage.css';
 
 const SignUpPage = ({ onBack, onSignUp }) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: '',
     surname: '',
@@ -94,8 +95,8 @@ const SignUpPage = ({ onBack, onSignUp }) => {
       if (onSignUp) {
         onSignUp(formData);
       }
-      // Optionally redirect or show success message
-      alert('Registration successful!');
+      // Redirect to login page after successful registration
+      navigate('/login');
     } catch (error) {
       setIsSubmitting(false);
       if (error.response && error.response.data && error.response.data.error) {

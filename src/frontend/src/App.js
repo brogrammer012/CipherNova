@@ -6,6 +6,7 @@ import SignUpPage from './pages/SignUpPage';
 import EmailVerificationPage from './pages/EmailVerificationPage';
 import DashboardPage from './pages/DashboardPage';
 import DetectionToolPage from './pages/DetectionToolPage';
+import CommunityPage from './pages/CommunityPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import './styles/App.css';
 
@@ -93,6 +94,14 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <DetectionToolPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route 
+            path="/community" 
+            element={
+              <ProtectedRoute>
+                <CommunityPage />
               </ProtectedRoute>
             }
           />

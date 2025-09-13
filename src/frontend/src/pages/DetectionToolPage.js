@@ -39,6 +39,21 @@ const DetectionToolPage = () => {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
+  // Function to update user XP in localStorage
+  const updateUserXP = (xpToAdd) => {
+    try {
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        const user = JSON.parse(userData);
+        user.xp = (user.xp || 0) + xpToAdd;
+        user.analysesCompleted = (user.analysesCompleted || 0) + 1;
+        localStorage.setItem('user', JSON.stringify(user));
+      }
+    } catch (e) {
+      console.error('Failed to update user XP:', e);
+    }
+  };
+
   const generateQuiz = (content, type) => {
     const quizzes = {
       email: {
@@ -94,8 +109,17 @@ const DetectionToolPage = () => {
       });
     }
     
-    setIsAnalyzing(false);
-    setCurrentStep('quiz');
+    // Award XP for successful analysis
+    const analysisXP = 30;
+    updateUserXP(analysisXP);
+    setToastMessage(`Analysis complete! +${analysisXP} XP`);
+    setShowToast(true);
+    
+    setTimeout(() => {
+      setShowToast(false);
+      setIsAnalyzing(false);
+      setCurrentStep('quiz');
+    }, 2000);
   };
 
   const handleQuizSubmit = () => {
