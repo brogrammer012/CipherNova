@@ -42,6 +42,24 @@ const Navbar = () => {
           >
             Detection Tool
           </Link>
+          <Link 
+            to="/community" 
+            className={`nav-link ${isActive('/community') ? 'active' : ''}`}
+          >
+            Community
+          </Link>
+          <Link 
+            to="/leaderboard" 
+            className={`nav-link ${isActive('/leaderboard') ? 'active' : ''}`}
+          >
+            Leaderboard
+          </Link>
+          <Link 
+            to="/profile" 
+            className={`nav-link ${isActive('/profile') ? 'active' : ''}`}
+          >
+            Profile
+          </Link>
         </div>
       </div>
     </nav>
