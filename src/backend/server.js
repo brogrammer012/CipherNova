@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import healthRoutes from './routes/healthCheck.js';
 import userRoutes from './routes/userRoutes.js';
+import communityRoutes from './routes/communityRoute.js';
 
 dotenv.config({ path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env.local' });
 
@@ -22,6 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/', healthRoutes);
 app.use('/', userRoutes);
+app.use('/', communityRoutes);
 
 // Simple test route
 app.get('/', (req, res) => {
