@@ -23,6 +23,7 @@ import Navbar from '../components/Navbar';
 import { getDashboardData, getUserAnalyses, getLeaderboard, getCommunityReports, getUserStats } from '../api';
 import '../styles/pages/DashboardPage.css';
 
+
 const DashboardPage = ({ user = { firstName: 'Alex', xp: 1200 } }) => {
   const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState(null);
@@ -87,8 +88,21 @@ const DashboardPage = ({ user = { firstName: 'Alex', xp: 1200 } }) => {
     fetchDashboardData();
   }, []);
 
+
+  // Get user info from localStorage (set after login)
+  let user = { firstName: 'User', level: 3, xp: 1200, maxXp: 1500 };
+  try {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      user = JSON.parse(userData);
+    }
+  } catch (e) {}
+
   const handleLogout = () => {
-    console.log('Logging out...');
+
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+
     window.location.href = '/';
   };
   
