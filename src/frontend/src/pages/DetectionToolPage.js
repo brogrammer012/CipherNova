@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { checkPhishing } from '../api';
+import { checkPhishing, whoisLookup } from '../api';
+import DomainRegistrarInfo from '../components/DomainRegistrarInfo';
+import DomainImportantDates from '../components/DomainImportantDates';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   Shield, 
@@ -89,11 +91,30 @@ const DetectionToolPage = () => {
   const handleAnalyze = async () => {
     if (!inputValue.trim()) return;
     setIsAnalyzing(true);
-    
+    // For domain, skip quiz and call whoisLookup
+    if (inputType === 'domain') {
+      try {
+        const response = await whoisLookup(inputValue);
+        setAnalysisResult(response.data);
+      } catch (error) {
+        setAnalysisResult({
+          riskLevel: 'high risk',
+          riskScore: 100,
+          suspiciousElements: 'WHOIS lookup failed',
+          securityFlags: 'Unable to analyze domain',
+          whois: null
+        });
+      }
+      setTimeout(() => {
+        setIsAnalyzing(false);
+        setCurrentStep('results');
+      }, 2000);
+      return;
+    }
+    // Non-domain: normal flow
     // Generate quiz first
     const quiz = generateQuiz(inputValue, inputType);
     setQuizData(quiz);
-    
     try {
       const response = await checkPhishing(inputValue);
       setAnalysisResult(response.data);
@@ -107,13 +128,11 @@ const DetectionToolPage = () => {
         detectedType: inputType
       });
     }
-    
     // Award XP for successful analysis
     const analysisXP = 30;
     updateUserXP(analysisXP);
     setToastMessage(`Analysis complete! +${analysisXP} XP`);
     setShowToast(true);
-    
     setTimeout(() => {
       setShowToast(false);
       setIsAnalyzing(false);
@@ -219,13 +238,30 @@ const DetectionToolPage = () => {
     }
   };
 
-  const getRiskColor = (level) => {
-    switch (level) {
-      case 'high': return '#ff4444';
-      case 'medium': return '#ffaa00';
-      case 'low': return '#00ff7f';
+  const getRiskColor = (level, score) => {
+    // If score is 75 or above, treat as high risk
+    if (typeof score === 'number') {
+      if (score >= 75) return '#ff4444'; // High risk
+      if (score >= 50) return '#ffaa00'; // Medium risk
+      return '#00ff7f'; // Low risk
+    }
+    switch (level?.toLowerCase()) {
+      case 'high':
+      case 'high risk': return '#ff4444';
+      case 'medium':
+      case 'medium risk': return '#ffaa00';
+      case 'low':
+      case 'low risk': return '#00ff7f';
       default: return '#888888';
     }
+  }
+
+  // Helper to map score to risk level string
+  const getRiskLevel = (score) => {
+  if (score >= 75 && score <= 100) return 'High Risk';
+  if (score >= 50 && score < 75) return 'Medium Risk';
+  if (score >= 0 && score < 50) return 'Low Risk';
+  return 'Unknown';
   };
 
   const getRiskIcon = (level) => {
@@ -308,6 +344,13 @@ const DetectionToolPage = () => {
                       <MessageSquare size={20} />
                       <span>Message</span>
                     </button>
+                    <button 
+                      className={`type-btn ${inputType === 'domain' ? 'active' : ''}`}
+                      onClick={() => setInputType('domain')}
+                    >
+                      <Star size={20} />
+                      <span>Domain</span>
+                    </button>
                   </div>
                 </div>
 
@@ -315,7 +358,7 @@ const DetectionToolPage = () => {
                   <textarea
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    placeholder={getPlaceholder()}
+                    placeholder={inputType === 'domain' ? 'Enter domain name (e.g. example.com)' : getPlaceholder()}
                     className="content-input"
                     rows={8}
                   />
@@ -473,112 +516,112 @@ const DetectionToolPage = () => {
                         {getRiskIcon(analysisResult.riskLevel)}
                       </div>
                       <div className="risk-details">
-                        <h2 className="risk-level" style={{ color: getRiskColor(analysisResult.riskLevel) }}>
-                          {(analysisResult.riskLevel ? analysisResult.riskLevel.toUpperCase() : 'UNKNOWN')} RISK
+                        <h2 className="risk-level" style={{ color: getRiskColor(analysisResult.riskLevel, analysisResult.riskScore) }}>
+                          {getRiskLevel(analysisResult.riskScore).toUpperCase()}
                         </h2>
-                        {/* <div className="risk-score-display">
-                          <span className="score-number">{analysisResult.riskScore}</span>
+                        <div className="risk-score-display">
+                          <span className="score-number">{(() => {
+                            // Map riskScore for domain type
+                            if (inputType === 'domain') {
+                              switch (analysisResult.riskScore) {
+                                case 0: return 0;
+                                case 1: return 25;
+                                case 2: return 50;
+                                case 3: return 75;
+                                case 4: return 100;
+                                default: return analysisResult.riskScore;
+                              }
+                            }
+                            return analysisResult.riskScore;
+                          })()}</span>
                           <span className="score-total">/100</span>
-                        </div> */}
+                        </div>
                       </div>
                     </div>
-                    {/* <div className="risk-bar">
-                      <div 
-                        className="risk-fill" 
-                        style={{ 
-                          width: `${analysisResult.riskScore}%`,
-                          backgroundColor: getRiskColor(analysisResult.riskLevel)
-                        }}
-                      ></div>
-                    </div> */}
+                        <div className="risk-bar">
+                          <div 
+                            className="risk-fill" 
+                            style={{ 
+                              width: `${(() => {
+                                if (inputType === 'domain') {
+                                  switch (analysisResult.riskScore) {
+                                    case 0: return 0;
+                                    case 1: return 25;
+                                    case 2: return 50;
+                                    case 3: return 75;
+                                    case 4: return 100;
+                                    default: return analysisResult.riskScore;
+                                  }
+                                }
+                                return analysisResult.riskScore;
+                              })()}%`,
+                              backgroundColor: getRiskColor(analysisResult.riskLevel, analysisResult.riskScore)
+                            }}
+                          ></div>
+                        </div>
                   </div>
 
-                  {/* Registrar Information - Only for Email Analysis */}
-                  {inputType === 'email' && analysisResult.domainInfo && (
-                    <div className="registrar-info">
-                      <h3>Registrar Information</h3>
-                      <div className="registrar-details">
-                        <div className="registrar-detail">
-                          <span className="detail-label">Registrar</span>
-                          <span className="detail-value">
-                            {analysisResult.domainInfo.registrar || 'Not available'}
-                          </span>
-                        </div>
-                        <div className="registrar-detail">
-                          <span className="detail-label">WHOIS Server</span>
-                          <span className="detail-value">
-                            {analysisResult.domainInfo.whoisServer || 'Not available'}
-                          </span>
-                        </div>
-                        <div className="registrar-detail">
-                          <span className="detail-label">Referral URL</span>
-                          {analysisResult.domainInfo.referralUrl ? (
-                            <a 
-                              href={analysisResult.domainInfo.referralUrl} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="detail-link"
-                            >
-                              {analysisResult.domainInfo.referralUrl}
-                            </a>
-                          ) : (
-                            <span className="detail-value">Not available</span>
-                          )}
-                        </div>
+                  {/* Domain WHOIS Results */}
+                  {inputType === 'domain' && analysisResult.whois && (
+                    <div className="domain-results-grid">
+                      <div className="risk-score-card">
+                        <DomainRegistrarInfo whois={{
+                          ...analysisResult.whois,
+                          domainStatus: analysisResult.whois.domainStatus && analysisResult.whois.domainStatus.toLowerCase().startsWith('ok') ? 'ok' : 'unknown'
+                        }} />
+                      </div>
+                      <div className="risk-score-card">
+                        <DomainImportantDates whois={analysisResult.whois} />
                       </div>
                     </div>
                   )}
 
-                  {/* Highlighted Content */}
+                  {/* Suspicious Elements Detected */}
                   <div className="content-analysis">
                     <h3>Suspicious Elements Detected</h3>
-                    {inputType === 'email' && analysisResult.domainInfo && (
-                      <div className="email-domain-info">
-                        <h4>Domain Information</h4>
-                        <div className="domain-details">
-                          <p><strong>Domain:</strong> {analysisResult.domainInfo.domain || 'N/A'}</p>
-                          <p><strong>Registrar:</strong> {analysisResult.domainInfo.registrar || 'Unknown'}</p>
-                          <p><strong>Registered:</strong> {analysisResult.domainInfo.creationDate || 'N/A'}</p>
-                          <p><strong>Expires:</strong> {analysisResult.domainInfo.expiryDate || 'N/A'}</p>
-                          <p><strong>Last Updated:</strong> {analysisResult.domainInfo.updatedDate || 'N/A'}</p>
-                        </div>
-                      </div>
-                    )}
-                    
-                    <div className="suspicious-elements">
-                      {inputType === 'email' && analysisResult.emailAnalysis && (
-                        <>
-                          <h4>Email Analysis</h4>
-                          <ul className="suspicious-list">
-                            {analysisResult.emailAnalysis.suspiciousPatterns && analysisResult.emailAnalysis.suspiciousPatterns.map((pattern, index) => (
-                              <li key={index} className="suspicious-item">
-                                <AlertTriangle size={14} className="warning-icon" />
-                                <span>{pattern}</span>
-                              </li>
-                            ))}
-                          </ul>
-                          
-                          {analysisResult.emailAnalysis.senderReputation && (
-                            <div className="reputation-info">
-                              <h5>Sender Reputation</h5>
-                              <p>{analysisResult.emailAnalysis.senderReputation}</p>
-                            </div>
-                          )}
-                        </>
-                      )}
-                      
-                      <div className="highlighted-content">
-                        <div 
-                          dangerouslySetInnerHTML={{ 
-                            __html: analysisResult.highlightedContent || inputValue 
-                          }}
-                        />
-                      </div>
+                    <div className="highlighted-content">
+                      {inputType === 'domain'
+                        ? (() => {
+                            const score = analysisResult.riskScore;
+                            if (score === 0) return <span>None</span>;
+                            // If suspiciousElements is a string, split by ';' or display as is
+                            if (analysisResult.suspiciousElements) {
+                              if (Array.isArray(analysisResult.suspiciousElements)) {
+                                return (
+                                  <ul>
+                                    {analysisResult.suspiciousElements.map((el, idx) => <li key={idx}>{el}</li>)}
+                                  </ul>
+                                );
+                              } else {
+                                // Try splitting by common delimiters
+                                const items = analysisResult.suspiciousElements.split(/;|\.|\n/).map(s => s.trim()).filter(Boolean);
+                                return (
+                                  <ul>
+                                    {items.map((el, idx) => <li key={idx}>{el}</li>)}
+                                  </ul>
+                                );
+                              }
+                            }
+                            return <span>Potential issues detected</span>;
+                          })()
+                        : <div dangerouslySetInnerHTML={{ __html: analysisResult.highlightedContent || inputValue }} />
+                      }
                     </div>
                   </div>
 
                   {/* Security Flags */}
-                  {Array.isArray(analysisResult.flags) && analysisResult.flags.length > 0 && (
+                  {inputType === 'domain' && analysisResult.securityFlags && (
+                    <div className="flags-section">
+                      <h3>Security Flags</h3>
+                      <div className="flags-list">
+                        <div className="flag-item">
+                          <AlertTriangle size={16} />
+                          <span>{analysisResult.securityFlags}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {inputType !== 'domain' && Array.isArray(analysisResult.flags) && analysisResult.flags.length > 0 && (
                     <div className="flags-section">
                       <h3>Security Flags</h3>
                       <div className="flags-list">
