@@ -493,15 +493,87 @@ const DetectionToolPage = () => {
                     </div> */}
                   </div>
 
+                  {/* Registrar Information - Only for Email Analysis */}
+                  {inputType === 'email' && analysisResult.domainInfo && (
+                    <div className="registrar-info">
+                      <h3>Registrar Information</h3>
+                      <div className="registrar-details">
+                        <div className="registrar-detail">
+                          <span className="detail-label">Registrar</span>
+                          <span className="detail-value">
+                            {analysisResult.domainInfo.registrar || 'Not available'}
+                          </span>
+                        </div>
+                        <div className="registrar-detail">
+                          <span className="detail-label">WHOIS Server</span>
+                          <span className="detail-value">
+                            {analysisResult.domainInfo.whoisServer || 'Not available'}
+                          </span>
+                        </div>
+                        <div className="registrar-detail">
+                          <span className="detail-label">Referral URL</span>
+                          {analysisResult.domainInfo.referralUrl ? (
+                            <a 
+                              href={analysisResult.domainInfo.referralUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="detail-link"
+                            >
+                              {analysisResult.domainInfo.referralUrl}
+                            </a>
+                          ) : (
+                            <span className="detail-value">Not available</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Highlighted Content */}
                   <div className="content-analysis">
                     <h3>Suspicious Elements Detected</h3>
-                    <div className="highlighted-content">
-                      <div 
-                        dangerouslySetInnerHTML={{ 
-                          __html: analysisResult.highlightedContent || inputValue 
-                        }}
-                      />
+                    {inputType === 'email' && analysisResult.domainInfo && (
+                      <div className="email-domain-info">
+                        <h4>Domain Information</h4>
+                        <div className="domain-details">
+                          <p><strong>Domain:</strong> {analysisResult.domainInfo.domain || 'N/A'}</p>
+                          <p><strong>Registrar:</strong> {analysisResult.domainInfo.registrar || 'Unknown'}</p>
+                          <p><strong>Registered:</strong> {analysisResult.domainInfo.creationDate || 'N/A'}</p>
+                          <p><strong>Expires:</strong> {analysisResult.domainInfo.expiryDate || 'N/A'}</p>
+                          <p><strong>Last Updated:</strong> {analysisResult.domainInfo.updatedDate || 'N/A'}</p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="suspicious-elements">
+                      {inputType === 'email' && analysisResult.emailAnalysis && (
+                        <>
+                          <h4>Email Analysis</h4>
+                          <ul className="suspicious-list">
+                            {analysisResult.emailAnalysis.suspiciousPatterns && analysisResult.emailAnalysis.suspiciousPatterns.map((pattern, index) => (
+                              <li key={index} className="suspicious-item">
+                                <AlertTriangle size={14} className="warning-icon" />
+                                <span>{pattern}</span>
+                              </li>
+                            ))}
+                          </ul>
+                          
+                          {analysisResult.emailAnalysis.senderReputation && (
+                            <div className="reputation-info">
+                              <h5>Sender Reputation</h5>
+                              <p>{analysisResult.emailAnalysis.senderReputation}</p>
+                            </div>
+                          )}
+                        </>
+                      )}
+                      
+                      <div className="highlighted-content">
+                        <div 
+                          dangerouslySetInnerHTML={{ 
+                            __html: analysisResult.highlightedContent || inputValue 
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
 
