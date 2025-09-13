@@ -24,7 +24,7 @@ import { getDashboardData, getUserAnalyses, getLeaderboard, getCommunityReports,
 import '../styles/pages/DashboardPage.css';
 
 
-const DashboardPage = ({ user = { firstName: 'Alex', xp: 1200 } }) => {
+const DashboardPage = () => {
   const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState(null);
   const [recentAnalyses, setRecentAnalyses] = useState([]);
@@ -33,12 +33,21 @@ const DashboardPage = ({ user = { firstName: 'Alex', xp: 1200 } }) => {
   const [userStats, setUserStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Get user info from localStorage (set after login)
+  let user = { firstName: 'User', xp: 1200 };
+  try {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      user = JSON.parse(userData);
+    }
+  } catch (e) {}
+
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         // Simulate API calls with mock data for now
         const mockDashboardData = {
-          user: { firstName: 'Alex', xp: 1250 },
+          user: user,
           badges: [
             { id: 1, name: 'First Analysis', icon: '🔍', description: 'Completed your first phishing analysis' },
             { id: 2, name: 'Sharp Eye', icon: '👁️', description: 'Detected 10 high-risk threats' },
@@ -86,17 +95,7 @@ const DashboardPage = ({ user = { firstName: 'Alex', xp: 1200 } }) => {
     };
     
     fetchDashboardData();
-  }, []);
-
-
-  // Get user info from localStorage (set after login)
-  let user = { firstName: 'User', level: 3, xp: 1200, maxXp: 1500 };
-  try {
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      user = JSON.parse(userData);
-    }
-  } catch (e) {}
+  }, [user.firstName, user.xp]);
 
   const handleLogout = () => {
 
