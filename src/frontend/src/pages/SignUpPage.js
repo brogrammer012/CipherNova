@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { registerUser } from '../api';
 import { Link } from 'react-router-dom';
 import { User, Mail, Lock, Eye, EyeOff, Shield, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
 import Navbar from '../components/Navbar';
@@ -78,20 +79,31 @@ const SignUpPage = ({ onBack, onSignUp }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     if (!validateForm()) {
       return;
     }
-
     setIsSubmitting(true);
-    
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const response = await registerUser({
+        firstName: formData.firstName,
+        surname: formData.surname,
+        email: formData.email,
+        password: formData.password,
+      });
       setIsSubmitting(false);
       if (onSignUp) {
         onSignUp(formData);
       }
-    }, 2000);
+      // Optionally redirect or show success message
+      alert('Registration successful!');
+    } catch (error) {
+      setIsSubmitting(false);
+      if (error.response && error.response.data && error.response.data.error) {
+        setErrors({ api: error.response.data.error });
+      } else {
+        setErrors({ api: 'Registration failed. Please try again.' });
+      }
+    }
   };
 
   return (
@@ -288,6 +300,12 @@ const SignUpPage = ({ onBack, onSignUp }) => {
                 Already have an account?{' '}
                 <Link to="/login" className="login-link">Login</Link>
               </p>
+              {errors.api && (
+                <div className="error-message">
+                  <AlertCircle size={14} />
+                  {errors.api}
+                </div>
+              )}
             </div>
           </form>
         </div>

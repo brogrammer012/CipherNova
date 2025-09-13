@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+// ...existing imports...
+import { checkPhishing } from '../api';
 import { Link } from 'react-router-dom';
 import { 
   Shield, 
@@ -23,139 +25,25 @@ const DetectionToolPage = () => {
   const [analysisResult, setAnalysisResult] = useState(null);
   const [showCrowdBlacklist, setShowCrowdBlacklist] = useState(false);
 
-  // Analysis logic for different content types
-  const analyzeContent = (content, type) => {
-    const result = {
-      riskScore: 0,
-      riskLevel: 'low',
-      flags: [],
-      suggestions: [],
-      highlightedContent: content,
-      detectedType: type
-    };
+  // All analysis now uses backend API. Local analyzeContent removed.
 
-    // Auto-detect type if not specified
-    if (type === 'auto') {
-      if (content.includes('@') && content.includes('.')) {
-        result.detectedType = 'email';
-      } else if (content.startsWith('http') || content.includes('www.')) {
-        result.detectedType = 'link';
-      } else {
-        result.detectedType = 'email'; // Default to email for text content
-      }
-    }
-
-    // Email analysis
-    if (result.detectedType === 'email') {
-      // Check for suspicious domains
-      const suspiciousDomains = ['tempmail', 'guerrillamail', '10minutemail', 'mailinator'];
-      if (suspiciousDomains.some(domain => content.toLowerCase().includes(domain))) {
-        result.riskScore += 30;
-        result.flags.push('Temporary email service detected');
-      }
-
-      // Check for urgent language
-      const urgentKeywords = ['urgent', 'immediate', 'expires today', 'act now', 'limited time'];
-      urgentKeywords.forEach(keyword => {
-        if (content.toLowerCase().includes(keyword.toLowerCase())) {
-          result.riskScore += 15;
-          result.flags.push(`Urgent language detected: "${keyword}"`);
-          result.highlightedContent = result.highlightedContent.replace(
-            new RegExp(keyword, 'gi'), 
-            `<mark class="risk-high">${keyword}</mark>`
-          );
-        }
-      });
-
-      // Check for financial keywords
-      const financialKeywords = ['bursary', 'scholarship', 'R50000', 'money', 'payment', 'bank details'];
-      financialKeywords.forEach(keyword => {
-        if (content.toLowerCase().includes(keyword.toLowerCase())) {
-          result.riskScore += 20;
-          result.flags.push(`Financial content detected: "${keyword}"`);
-          result.highlightedContent = result.highlightedContent.replace(
-            new RegExp(keyword, 'gi'), 
-            `<mark class="risk-medium">${keyword}</mark>`
-          );
-        }
-      });
-    }
-
-    // Link analysis
-    if (result.detectedType === 'link') {
-      // Check for URL shorteners
-      const shorteners = ['bit.ly', 'tinyurl', 't.co', 'goo.gl', 'ow.ly'];
-      if (shorteners.some(shortener => content.includes(shortener))) {
-        result.riskScore += 25;
-        result.flags.push('Shortened URL detected - cannot verify destination');
-      }
-
-      // Check for suspicious TLDs
-      const suspiciousTlds = ['.tk', '.ml', '.ga', '.cf'];
-      if (suspiciousTlds.some(tld => content.includes(tld))) {
-        result.riskScore += 35;
-        result.flags.push('Suspicious domain extension detected');
-      }
-
-      // Check for typosquatting
-      const legitimateDomains = ['nsfas.org.za', 'wits.ac.za', 'uct.ac.za', 'up.ac.za'];
-      legitimateDomains.forEach(domain => {
-        const variations = [
-          domain.replace('o', '0'),
-          domain.replace('a', '@'),
-          domain.replace('.', '-'),
-          'secure-' + domain
-        ];
-        variations.forEach(variation => {
-          if (content.includes(variation) && !content.includes(domain)) {
-            result.riskScore += 40;
-            result.flags.push(`Possible typosquatting of ${domain}`);
-          }
-        });
-      });
-    }
-
-
-    // Determine risk level and suggestions
-    if (result.riskScore >= 50) {
-      result.riskLevel = 'high';
-      result.suggestions = [
-        'Do not interact with this content',
-        'Delete immediately',
-        'Report to your institution\'s IT security team',
-        'Add to community blacklist to warn others'
-      ];
-    } else if (result.riskScore >= 25) {
-      result.riskLevel = 'medium';
-      result.suggestions = [
-        'Exercise caution before interacting',
-        'Verify sender through official channels',
-        'Do not provide personal information',
-        'Consider reporting if suspicious'
-      ];
-    } else {
-      result.riskLevel = 'low';
-      result.suggestions = [
-        'Content appears relatively safe',
-        'Still verify sender if requesting information',
-        'Trust your instincts if something feels off'
-      ];
-    }
-
-    return result;
-  };
-
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
     if (!inputValue.trim()) return;
-    
     setIsAnalyzing(true);
-    
-    // Simulate analysis delay
-    setTimeout(() => {
-      const result = analyzeContent(inputValue, inputType);
-      setAnalysisResult(result);
-      setIsAnalyzing(false);
-    }, 2000);
+    try {
+      const response = await checkPhishing(inputValue);
+      setAnalysisResult(response.data);
+    } catch (error) {
+      setAnalysisResult({
+        riskLevel: 'error',
+        riskScore: 0,
+        flags: ['Error analyzing content. Please try again.'],
+        suggestions: [],
+        highlightedContent: inputValue,
+        detectedType: inputType
+      });
+    }
+    setIsAnalyzing(false);
   };
 
   const handleNewAnalysis = () => {
@@ -300,7 +188,7 @@ const DetectionToolPage = () => {
                   </div>
                   <div className="risk-info">
                     <h2>Risk Level: <span style={{ color: getRiskColor(analysisResult.riskLevel) }}>
-                      {analysisResult.riskLevel.toUpperCase()}
+                      {(analysisResult.riskLevel ? analysisResult.riskLevel.toUpperCase() : 'UNKNOWN')}
                     </span></h2>
                     <p>Score: {analysisResult.riskScore}/100</p>
                   </div>
@@ -323,7 +211,7 @@ const DetectionToolPage = () => {
                 </div>
 
                 {/* Flags */}
-                {analysisResult.flags.length > 0 && (
+                {Array.isArray(analysisResult.flags) && analysisResult.flags.length > 0 && (
                   <div className="flags-section">
                     <h3>Security Flags</h3>
                     <div className="flags-list">
@@ -341,7 +229,7 @@ const DetectionToolPage = () => {
                 <div className="suggestions-section">
                   <h3>Recommended Actions</h3>
                   <div className="suggestions-list">
-                    {analysisResult.suggestions.map((suggestion, index) => (
+                    {Array.isArray(analysisResult.suggestions) && analysisResult.suggestions.map((suggestion, index) => (
                       <div key={index} className="suggestion-item">
                         <CheckCircle size={16} />
                         <span>{suggestion}</span>

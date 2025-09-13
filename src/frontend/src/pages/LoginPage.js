@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { loginUser } from '../api';
 import { Link } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, Shield, ArrowLeft, LogIn, AlertCircle } from 'lucide-react';
 import Navbar from '../components/Navbar';
@@ -60,28 +61,30 @@ const LoginPage = ({ onBack, onLogin }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     if (!validateForm()) {
       return;
     }
-
     setIsLoggingIn(true);
     setLoginError('');
-    
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const response = await loginUser({
+        email: formData.email,
+        password: formData.password,
+      });
       setIsLoggingIn(false);
-      
-      // Simulate authentication (in real app, check against backend)
-      if (formData.email === 'test@example.com' && formData.password === 'password123') {
-        if (onLogin) {
-          onLogin(formData);
-        }
-        
-      } else {
-        setLoginError('Incorrect email or password. Please try again.');
+      if (onLogin) {
+        onLogin(formData);
       }
-    }, 2000);
+      // Optionally redirect or show success message
+      alert('Login successful!');
+    } catch (error) {
+      setIsLoggingIn(false);
+      if (error.response && error.response.data && error.response.data.error) {
+        setLoginError(error.response.data.error);
+      } else {
+        setLoginError('Login failed. Please try again.');
+      }
+    }
   };
 
   return (
