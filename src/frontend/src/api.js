@@ -92,3 +92,8 @@ export async function checkBlackList(value) {
 export async function addToBlackList(type, value) {
   return axiosInstance.post('/add-to-blacklist', { type, value });
 }
+
+export async function checkUrl(url) {
+  return axiosInstance.post('/check-url', { url });
+}
+
