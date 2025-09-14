@@ -88,10 +88,62 @@ const DetectionToolPage = () => {
     return quizzes[type] || quizzes.email;
   };
 
+  // Create a clear, actionable 2-option quiz based on analysis (avoid raw "Content appears relatively safe")
+  const createSimpleTwoOptionQuiz = (analysis, type) => {
+    const firstSuggestion = Array.isArray(analysis?.suggestions) && analysis.suggestions.length > 0
+      ? analysis.suggestions[0]
+      : null;
+    const firstFlag = Array.isArray(analysis?.flags) && analysis.flags.length > 0
+      ? analysis.flags[0]
+      : null;
+
+    const mapToAction = (text) => {
+      if (!text) return null;
+      const t = text.toLowerCase();
+      if (t.includes('do not') || t.includes('delete') || t.includes('do not interact')) {
+        return 'Do not interact with this content';
+      }
+      if (t.includes('report') || t.includes('blacklist')) {
+        return 'Report to your security / community team';
+      }
+      if (t.includes('verify') || t.includes('exercise caution') || t.includes('trust your instincts') || t.includes('still verify')) {
+        return 'Verify the sender via official channels before interacting';
+      }
+      if (t.includes('content appears relatively safe') || t.includes('relatively safe') || t.includes('appears safe')) {
+        return 'Verify the sender via official channels before interacting';
+      }
+      // fallback: return a concise actionable phrase derived from text
+      return text.length > 80 ? text.slice(0, 77) + '...' : text;
+    };
+
+    const correctAction = mapToAction(firstSuggestion) || mapToAction(firstFlag) || 'Report to your security team';
+    // Build a plausible but incorrect distractor that contrasts with the correct action
+    const buildDistractor = (correct) => {
+      const lc = correct.toLowerCase();
+      if (lc.includes('do not') || lc.includes('delete')) return 'Interact with it to check what happens';
+      if (lc.includes('verify')) return 'Ignore and trust the content';
+      if (lc.includes('report')) return 'Ignore and do not report';
+      return 'Ignore the warning and proceed';
+    };
+
+    const distractor = buildDistractor(correctAction);
+
+    return {
+      question: type === 'message'
+        ? 'What is the safest immediate action to take?'
+        : 'What is the most appropriate next step?',
+      options: [
+        { id: 'a', text: correctAction, correct: true },
+        { id: 'b', text: distractor, correct: false }
+      ]
+    };
+  };
+
   const handleAnalyze = async () => {
     if (!inputValue.trim()) return;
     setIsAnalyzing(true);
-    // For domain, skip quiz and call whoisLookup
+
+    // Domain branch (unchanged)
     if (inputType === 'domain') {
       try {
         const response = await whoisLookup(inputValue);
@@ -111,7 +163,47 @@ const DetectionToolPage = () => {
       }, 2000);
       return;
     }
-    // Non-domain: normal flow
+
+    // Message branch: call /checkPhishing and present a simple 2-option quiz before results
+    if (inputType === 'message') {
+      try {
+        const response = await checkPhishing(inputValue);
+        setAnalysisResult(response.data);
+        // create a simple two-option quiz based on response
+        const simpleQuiz = createSimpleTwoOptionQuiz(response.data, 'message');
+        setQuizData(simpleQuiz);
+        setSelectedAnswer(null);
+      } catch (error) {
+        const fallback = {
+          riskLevel: 'high',
+          riskScore: 75,
+          flags: ['Suspicious patterns detected', 'Potential phishing attempt'],
+          suggestions: ['Do not click any links', 'Report to security team'],
+          highlightedContent: inputValue,
+          detectedType: inputType
+        };
+        setAnalysisResult(fallback);
+        const simpleQuiz = createSimpleTwoOptionQuiz(fallback, 'message');
+        setQuizData(simpleQuiz);
+        setSelectedAnswer(null);
+      }
+
+      // Award XP for message analysis (keep previous behavior)
+      const analysisXP = 30;
+      updateUserXP(analysisXP);
+      setToastMessage(`Analysis complete! +${analysisXP} XP`);
+      setShowToast(true);
+
+      setTimeout(() => {
+        setShowToast(false);
+        setIsAnalyzing(false);
+        // go to quiz step so user answers the 2-option quiz before viewing results
+        setCurrentStep('quiz');
+      }, 1500);
+      return;
+    }
+
+    // Non-domain & non-message: existing quiz flow (email/link)
     // Generate quiz first
     const quiz = generateQuiz(inputValue, inputType);
     setQuizData(quiz);
@@ -609,31 +701,55 @@ const DetectionToolPage = () => {
                     </div>
                   </div>
 
-                  {/* Security Flags */}
-                  {inputType === 'domain' && analysisResult.securityFlags && (
-                    <div className="flags-section">
-                      <h3>Security Flags</h3>
-                      <div className="flags-list">
-                        <div className="flag-item">
-                          <AlertTriangle size={16} />
-                          <span>{analysisResult.securityFlags}</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  {inputType !== 'domain' && Array.isArray(analysisResult.flags) && analysisResult.flags.length > 0 && (
-                    <div className="flags-section">
-                      <h3>Security Flags</h3>
-                      <div className="flags-list">
-                        {analysisResult.flags.map((flag, index) => (
-                          <div key={index} className="flag-item">
+                  {/* Security Flags (always shown; display 'None' if empty) */}
+                  <div className="flags-section">
+                    <h3>Security Flags</h3>
+                    <div className="flags-list">
+                      {inputType === 'domain' ? (
+                        analysisResult.securityFlags ? (
+                          <div className="flag-item">
                             <AlertTriangle size={16} />
-                            <span>{flag}</span>
+                            <span>{analysisResult.securityFlags}</span>
                           </div>
-                        ))}
-                      </div>
+                        ) : (
+                          <div className="flag-item none">
+                            <AlertTriangle size={16} />
+                            <span>None</span>
+                          </div>
+                        )
+                      ) : (
+                        Array.isArray(analysisResult.flags) && analysisResult.flags.length > 0 ? (
+                          analysisResult.flags.map((flag, index) => (
+                            <div key={index} className="flag-item">
+                              <AlertTriangle size={16} />
+                              <span>{flag}</span>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="flag-item none">
+                            <AlertTriangle size={16} />
+                            <span>None</span>
+                          </div>
+                        )
+                      )}
                     </div>
-                  )}
+                  </div>
+
+                  {/* Suggestions (always shown; display 'None' if empty) */}
+                  <div className="suggestions-section">
+                    <h3>Suggestions</h3>
+                    <div className="suggestions-list">
+                      {Array.isArray(analysisResult.suggestions) && analysisResult.suggestions.length > 0 ? (
+                        <ul>
+                          {analysisResult.suggestions.map((sugg, i) => (
+                            <li key={i}>{sugg}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <div className="suggestion-none">None</div>
+                      )}
+                    </div>
+                  </div>
 
                   {/* Recommended Actions */}
                   <div className="action-recommendations">
