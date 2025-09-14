@@ -6,7 +6,6 @@
 
 ## ⚒️ Team Name
 ``` c
-// TODO: Fill-in the name of your team.
 ciphernova
 ```
 
@@ -19,9 +18,7 @@ ciphernova
 | **Ntokozo**   | Data engineer    | University of Pretoria | Beef.Tongs | <u22506773@tuks.co.za> |
 
 ## 🏫 Institution
-``` c
-// TODO: Fill-in the name of the institution your
-// team is competing under.
+```c
 University of Pretoria
 ```
 
