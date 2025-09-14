@@ -380,4 +380,218 @@ router.get('/whois/:domain', async (req, res) => {
     }
 });
 
+router.post('/checkPhishing', (req, res) => {
+    const { message } = req.body;
+    if (!message || typeof message !== 'string') {
+        return res.status(400).json({
+            riskLevel: 'error',
+            riskScore: 0,
+            flags: ['Message is required and must be a string.'],
+            suggestions: [],
+            highlightedContent: '',
+            detectedType: 'unknown'
+        });
+    }
+
+    try {
+        // Enhanced phishing patterns
+        const phishingPatterns = {
+            urgencyWords: /\b(urgent|immediate|asap|act now|hurry|expire|expires|expiring|suspend|suspended|verify now|limited time|deadline|final notice|last chance|time sensitive)\b/gi,
+            winPrizes: /\b(congratulations|winner|won|win|prize|lottery|jackpot|lucky|selected|chosen|reward|free money|cash prize|million|inheritance|beneficiary)\b/gi,
+            threatLanguage: /\b(suspend|suspended|terminate|terminated|frozen|blocked|deactivate|deactivated|close|closed|restrict|restricted|penalty|legal action)\b/gi,
+            moneyRequests: /\b(transfer|wire|payment|fee|tax|processing|handling|shipping|administration|verification fee|advance fee|deposit)\b/gi,
+            personalInfoRequests: /\b(password|pin|ssn|social security|credit card|bank account|routing number|cvv|security code|mother's maiden name|date of birth)\b/gi,
+            fakeAuthority: /\b(irs|fbi|police|government|bank|microsoft|apple|google|amazon|paypal|tax office|immigration|customs)\b/gi,
+            poorGrammar: /\b(recieve|loose|there account|you're account|wont|cant|payed|seperate|definately|occured|embarass)\b/gi,
+            genericGreetings: /\b(dear customer|dear user|dear sir\/madam|dear beneficiary|dear friend|dear winner|valued customer)\b/gi,
+            suspiciousLinks: /https?:\/\/[^\s]+/gi,
+            phoneNumbers: /(\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g,
+            emails: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
+            clickBait: /\b(click here|click now|download now|install now|update now|verify account|confirm identity|claim now|get started)\b/gi,
+            scarcity: /\b(only|limited|exclusive|special offer|one time|expires today|24 hours|while supplies last|act fast)\b/gi,
+            tooGoodToBeTrue: /\b(free|100% free|no cost|guaranteed|risk free|easy money|work from home|make money fast|get rich)\b/gi
+        };
+
+        // Get general phishing signals
+        const generalSignals = detectPhishingSignals(message);
+        
+        // Check for specific phishing patterns
+        const detectedFlags = [];
+        let riskScore = 0;
+
+        // Check urgency language
+        const urgencyMatches = message.match(phishingPatterns.urgencyWords);
+        if (urgencyMatches) {
+            detectedFlags.push(`Contains urgent language: "${urgencyMatches.slice(0, 3).join(', ')}"`);
+            riskScore += urgencyMatches.length * 15;
+        }
+
+        // Check for win/prize language
+        const winMatches = message.match(phishingPatterns.winPrizes);
+        if (winMatches) {
+            detectedFlags.push(`Contains prize/winning language: "${winMatches.slice(0, 3).join(', ')}"`);
+            riskScore += winMatches.length * 20;
+        }
+
+        // Check for threat language
+        const threatMatches = message.match(phishingPatterns.threatLanguage);
+        if (threatMatches) {
+            detectedFlags.push(`Contains threatening language: "${threatMatches.slice(0, 3).join(', ')}"`);
+            riskScore += threatMatches.length * 18;
+        }
+
+        // Check for money requests
+        const moneyMatches = message.match(phishingPatterns.moneyRequests);
+        if (moneyMatches) {
+            detectedFlags.push(`Requests money/payment: "${moneyMatches.slice(0, 3).join(', ')}"`);
+            riskScore += moneyMatches.length * 25;
+        }
+
+        // Check for personal info requests
+        const personalInfoMatches = message.match(phishingPatterns.personalInfoRequests);
+        if (personalInfoMatches) {
+            detectedFlags.push(`Requests personal information: "${personalInfoMatches.slice(0, 3).join(', ')}"`);
+            riskScore += personalInfoMatches.length * 30;
+        }
+
+        // Check for fake authority impersonation
+        const authorityMatches = message.match(phishingPatterns.fakeAuthority);
+        if (authorityMatches) {
+            detectedFlags.push(`Claims to be from authority: "${authorityMatches.slice(0, 3).join(', ')}"`);
+            riskScore += authorityMatches.length * 22;
+        }
+
+        // Check for poor grammar
+        const grammarMatches = message.match(phishingPatterns.poorGrammar);
+        if (grammarMatches) {
+            detectedFlags.push(`Contains spelling/grammar errors: "${grammarMatches.slice(0, 3).join(', ')}"`);
+            riskScore += grammarMatches.length * 10;
+        }
+
+        // Check for generic greetings
+        const greetingMatches = message.match(phishingPatterns.genericGreetings);
+        if (greetingMatches) {
+            detectedFlags.push(`Uses generic greeting: "${greetingMatches.slice(0, 2).join(', ')}"`);
+            riskScore += greetingMatches.length * 12;
+        }
+
+        // Check for suspicious links
+        const linkMatches = message.match(phishingPatterns.suspiciousLinks);
+        if (linkMatches) {
+            detectedFlags.push(`Contains ${linkMatches.length} external link(s)`);
+            riskScore += linkMatches.length * 15;
+        }
+
+        // Check for click bait language
+        const clickBaitMatches = message.match(phishingPatterns.clickBait);
+        if (clickBaitMatches) {
+            detectedFlags.push(`Contains action-demanding language: "${clickBaitMatches.slice(0, 3).join(', ')}"`);
+            riskScore += clickBaitMatches.length * 16;
+        }
+
+        // Check for scarcity tactics
+        const scarcityMatches = message.match(phishingPatterns.scarcity);
+        if (scarcityMatches) {
+            detectedFlags.push(`Uses scarcity tactics: "${scarcityMatches.slice(0, 3).join(', ')}"`);
+            riskScore += scarcityMatches.length * 14;
+        }
+
+        // Check for too-good-to-be-true offers
+        const tooGoodMatches = message.match(phishingPatterns.tooGoodToBeTrue);
+        if (tooGoodMatches) {
+            detectedFlags.push(`Contains too-good-to-be-true offers: "${tooGoodMatches.slice(0, 3).join(', ')}"`);
+            riskScore += tooGoodMatches.length * 18;
+        }
+
+        // Combine all flags
+        const allFlags = [...generalSignals, ...detectedFlags];
+
+        // Cap risk score at 100
+        riskScore = Math.min(riskScore, 100);
+
+        // Determine risk level
+        let riskLevel = 'low';
+        if (riskScore >= 75) riskLevel = 'high';
+        else if (riskScore >= 40) riskLevel = 'medium';
+
+        // Detect content type
+        let detectedType = 'message';
+        if (message.includes('@') && (message.includes('Subject:') || message.includes('From:'))) {
+            detectedType = 'email';
+        } else if (message.startsWith('http') || message.includes('www.')) {
+            detectedType = 'link';
+        }
+
+        // Generate suggestions based on risk level and detected patterns
+        let suggestions = [];
+        if (riskLevel === 'high') {
+            suggestions = [
+                'Do not interact with this content',
+                'Delete immediately',
+                'Do not click any links',
+                'Do not provide any personal information',
+                'Report to your IT security team',
+                'Mark as spam/phishing if received via email'
+            ];
+        } else if (riskLevel === 'medium') {
+            suggestions = [
+                'Exercise extreme caution',
+                'Verify sender through official channels',
+                'Do not provide personal information',
+                'Be suspicious of any urgent requests',
+                'Consider reporting if suspicious'
+            ];
+        } else {
+            suggestions = [
+                'Content appears relatively safe',
+                'Still verify sender if requesting information',
+                'Trust your instincts if something feels off',
+                'Be cautious of unsolicited messages'
+            ];
+        }
+
+        // Highlight suspicious elements in content
+        let highlightedContent = message;
+        
+        // Highlight different types of suspicious content with different classes
+        Object.entries(phishingPatterns).forEach(([type, pattern]) => {
+            highlightedContent = highlightedContent.replace(pattern, `<mark class="${type}">$&</mark>`);
+        });
+
+        res.json({
+            riskLevel,
+            riskScore,
+            flags: allFlags,
+            suggestions,
+            highlightedContent,
+            detectedType,
+            messageAnalysis: {
+                hasUrgencyLanguage: urgencyMatches ? urgencyMatches.length > 0 : false,
+                hasPrizeLanguage: winMatches ? winMatches.length > 0 : false,
+                hasThreatLanguage: threatMatches ? threatMatches.length > 0 : false,
+                requestsMoney: moneyMatches ? moneyMatches.length > 0 : false,
+                requestsPersonalInfo: personalInfoMatches ? personalInfoMatches.length > 0 : false,
+                impersonatesAuthority: authorityMatches ? authorityMatches.length > 0 : false,
+                hasGrammarErrors: grammarMatches ? grammarMatches.length > 0 : false,
+                usesGenericGreeting: greetingMatches ? greetingMatches.length > 0 : false,
+                containsLinks: linkMatches ? linkMatches.length : 0,
+                usesClickBait: clickBaitMatches ? clickBaitMatches.length > 0 : false,
+                usesScarcityTactics: scarcityMatches ? scarcityMatches.length > 0 : false,
+                hasTooGoodOffers: tooGoodMatches ? tooGoodMatches.length > 0 : false
+            }
+        });
+
+    } catch (error) {
+        console.error('Error analyzing message:', error);
+        res.status(500).json({
+            riskLevel: 'error',
+            riskScore: 0,
+            flags: ['Failed to analyze message content'],
+            suggestions: ['Please try again or contact support'],
+            highlightedContent: message,
+            detectedType: 'unknown'
+        });
+    }
+});
+
 export default router;

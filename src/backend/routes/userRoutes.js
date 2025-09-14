@@ -141,7 +141,7 @@ router.get('/user/xp/:userId', async (req, res) => {
     }
 });
 
-// Check phishing endpoint - updated to handle different content types
+// Check phishing endpoint - enhanced with comprehensive message analysis
 
 
 export default router;
