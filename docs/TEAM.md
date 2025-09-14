@@ -7,22 +7,23 @@
 ## ⚒️ Team Name
 ``` c
 // TODO: Fill-in the name of your team.
+ciphernova
 ```
 
 ## 👥 Members
 | Name     | Role                | Institution           | Discord Handle | Email |
 |----------|---------------------|-----------------------| -------------------|-------------|
-| **Name 1**   | Backend Developer   | University of Cape Town | name1 | <email1@gmail.com> |
-| **Name 2**   | Frontend Developer  | University of the Witwatersrand | name2 | <email2@gmail.com> |
-| **Name 3**   | Designer            | University of Johannesburg | name3 | <email3@gmail.com> |
-| **Name 4**   | Q.A Tester          | University of the Western Cape | name4 | <email4@gmail.com> |
+| **Nigel**   | Backend Developer  | University of Pretoria | brogrammer012 | <u22528084@tuks.co.za> |
+| **Vane**   | Frontend Developer  | University of Pretoria | vdenise | <u23676150@tuks.co.za> |
+| **Taku**   | Backend Developer   | University of Pretoria | Takudzwa Magunda u22599160 | <u22599160@tuks.co.za> |
+| **Ntokozo**   | Data engineer    | University of Pretoria | Beef.Tongs | <u22506773@tuks.co.za> |
 
 ## 🏫 Institution
 ``` c
 // TODO: Fill-in the name of the institution your
 // team is competing under.
+University of Pretoria
 ```
 
 ## 📧 Other Contact Info
-- GitHub Repo: <https://github.com/user-name/repo-name>
-- Other Info (if available): LinkedIn, Website, etc.
+- GitHub Repo: <https://github.com/brogrammer012/CipherNova>
