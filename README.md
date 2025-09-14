@@ -7,8 +7,10 @@ Welcome to the official **Hackathon Submission Template** for the **South Africa
 ## 📂 Repository Structure
 ```
 ├── assets/
-│   └── README.md
+│   ├── README.md
+│   └── Sponsors.jpg
 ├── demo/
+│   ├── Demovid(1).mp4
 │   ├── OVERVIEW.md
 │   └── README.md
 ├── docs/
@@ -19,7 +21,88 @@ Welcome to the official **Hackathon Submission Template** for the **South Africa
 ├── scripts/
 │   └── README.md
 ├── src/
-│   └── README.md
+│   ├── README.md
+│   ├── backend/
+│   │   ├── .env
+│   │   ├── data/
+│   │   ├── database/
+│   │   ├── node_modules/
+│   │   ├── package-lock.json
+│   │   ├── package.json
+│   │   ├── routes/
+│   │   │   ├── communityRoute.js
+│   │   │   ├── detectionRoutes.js
+│   │   │   ├── healthCheck.js
+│   │   │   ├── urlRoutes.js
+│   │   │   ├── userRoutes.js
+│   │   │   └── whoisRoutes.js
+│   │   ├── server.js
+│   │   └── utils/
+│   │       ├── detectPhishingSignals.js
+│   │       ├── urlRisk.js
+│   │       └── whoisRiskScore.js
+│   ├── frontend/
+│   │   ├── craco.config.js
+│   │   ├── node_modules/
+│   │   ├── package-lock.json
+│   │   ├── package.json
+│   │   ├── public/
+│   │   ├── README.md
+│   │   ├── src/
+│   │   │   ├── api.js
+│   │   │   ├── App.js
+│   │   │   ├── index.css
+│   │   │   ├── index.js
+│   │   │   ├── components/
+│   │   │   │   ├── CrowdBlacklist.js
+│   │   │   │   ├── CTA.js
+│   │   │   │   ├── dashboard/
+│   │   │   │   ├── DomainImportantDates.js
+│   │   │   │   ├── DomainRegistrarInfo.js
+│   │   │   │   ├── Features.js
+│   │   │   │   ├── Footer.js
+│   │   │   │   ├── Gamification.js
+│   │   │   │   ├── Hero.js
+│   │   │   │   ├── Navbar.js
+│   │   │   │   ├── PrimaryButton.js
+│   │   │   │   ├── ProtectedRoute.js
+│   │   │   │   ├── SecondaryButton.js
+│   │   │   │   └── ...other components
+│   │   │   ├── pages/
+│   │   │   │   ├── CommunityPage.js
+│   │   │   │   ├── DashboardPage.js
+│   │   │   │   ├── DetectionToolPage.js
+│   │   │   │   ├── EmailVerificationPage.js
+│   │   │   │   ├── LandingPage.js
+│   │   │   │   ├── LeaderboardPage.js
+│   │   │   │   ├── LoginPage.js
+│   │   │   │   ├── SignUpPage.js
+│   │   │   ├── styles/
+│   │   │   │   ├── App.css
+│   │   │   │   ├── components/
+│   │   │   │   │   ├── CrowdBlacklist.css
+│   │   │   │   │   ├── CTA.css
+│   │   │   │   │   ├── Features.css
+│   │   │   │   │   ├── Footer.css
+│   │   │   │   │   ├── Gamification.css
+│   │   │   │   │   ├── Hero.css
+│   │   │   │   │   ├── Navbar.css
+│   │   │   │   │   ├── PrimaryButton.css
+│   │   │   │   │   ├── SecondaryButton.css
+│   │   │   │   ├── dashboard/
+│   │   │   │   ├── pages/
+│   │   │   │   │   ├── CommunityPage.css
+│   │   │   │   │   ├── DashboardPage.css
+│   │   │   │   │   ├── DetectionToolPage.css
+│   │   │   │   │   ├── EmailVerificationPage.css
+│   │   │   │   │   ├── LeaderboardPage.css
+│   │   │   │   │   ├── LoginPage.css
+│   │   │   │   │   ├── SignUpPage.css
+│   │   │   │   └── ...other styles
+│   │   │   └── ...other frontend files
+│   │   └── yarn.lock
+│   └── superbase.js
+│   └── userRoutes.js
 ├── vendor/
 │   └── README.md
 ├── .dockerignore
@@ -28,7 +111,9 @@ Welcome to the official **Hackathon Submission Template** for the **South Africa
 ├── .gitignore
 ├── Dockerfile
 ├── LICENSE
-└── README.md
+├── package-lock.json
+├── package.json
+├── README.md
 ```
 ---
 
