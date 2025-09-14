@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { checkPhishing, whoisLookup ,checkUrl} from '../api';
+import { checkPhishing, whoisLookup, checkMail, addToBlackList ,checkUrl } from '../api';
 import DomainRegistrarInfo from '../components/DomainRegistrarInfo';
 import DomainImportantDates from '../components/DomainImportantDates';
 import { Link, useNavigate } from 'react-router-dom';
@@ -38,7 +38,9 @@ const DetectionToolPage = () => {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [quizResult, setQuizResult] = useState(null);
   const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
+  const [toastMessage, setToastMessage] = useState('');
+  const [blacklistLoading, setBlacklistLoading] = useState(false);
+  const [blacklistAdded, setBlacklistAdded] = useState({ email: false, domain: false });
 
   // Function to update user XP in localStorage
   const updateUserXP = (xpToAdd) => {
@@ -100,11 +102,63 @@ const DetectionToolPage = () => {
     return quizzes[type] || quizzes.email;
   };
 
+  // Create a clear, actionable 2-option quiz based on analysis (avoid raw "Content appears relatively safe")
+  const createSimpleTwoOptionQuiz = (analysis, type) => {
+    const firstSuggestion = Array.isArray(analysis?.suggestions) && analysis.suggestions.length > 0
+      ? analysis.suggestions[0]
+      : null;
+    const firstFlag = Array.isArray(analysis?.flags) && analysis.flags.length > 0
+      ? analysis.flags[0]
+      : null;
+
+    const mapToAction = (text) => {
+      if (!text) return null;
+      const t = text.toLowerCase();
+      if (t.includes('do not') || t.includes('delete') || t.includes('do not interact')) {
+        return 'Do not interact with this content';
+      }
+      if (t.includes('report') || t.includes('blacklist')) {
+        return 'Report to your security / community team';
+      }
+      if (t.includes('verify') || t.includes('exercise caution') || t.includes('trust your instincts') || t.includes('still verify')) {
+        return 'Verify the sender via official channels before interacting';
+      }
+      if (t.includes('content appears relatively safe') || t.includes('relatively safe') || t.includes('appears safe')) {
+        return 'Verify the sender via official channels before interacting';
+      }
+      // fallback: return a concise actionable phrase derived from text
+      return text.length > 80 ? text.slice(0, 77) + '...' : text;
+    };
+
+    const correctAction = mapToAction(firstSuggestion) || mapToAction(firstFlag) || 'Report to your security team';
+    // Build a plausible but incorrect distractor that contrasts with the correct action
+    const buildDistractor = (correct) => {
+      const lc = correct.toLowerCase();
+      if (lc.includes('do not') || lc.includes('delete')) return 'Interact with it to check what happens';
+      if (lc.includes('verify')) return 'Ignore and trust the content';
+      if (lc.includes('report')) return 'Ignore and do not report';
+      return 'Ignore the warning and proceed';
+    };
+
+    const distractor = buildDistractor(correctAction);
+
+    return {
+      question: type === 'message'
+        ? 'What is the safest immediate action to take?'
+        : 'What is the most appropriate next step?',
+      options: [
+        { id: 'a', text: correctAction, correct: true },
+        { id: 'b', text: distractor, correct: false }
+      ]
+    };
+  };
+
   const handleAnalyze = async () => {
     if (!inputValue.trim()) return;
     setIsAnalyzing(true);
-    // For domain, skip quiz and call whoisLookup
-    if (inputType === "domain") {
+
+    // Domain branch (unchanged)
+    if (inputType === 'domain') {
       try {
         const response = await whoisLookup(inputValue);
         setAnalysisResult(response.data);
@@ -124,6 +178,98 @@ const DetectionToolPage = () => {
       return;
     }
 
+    // Email branch: call /check-email and present the quiz (uses existing quiz UI)
+    if (inputType === 'email') {
+      // create quiz for email (keeps current UX)
+      const quiz = generateQuiz(inputValue, 'email');
+      setQuizData(quiz);
+      setSelectedAnswer(null);
+
+      try {
+        const resp = await checkMail(inputValue);
+        const data = resp?.data || {};
+        // map small riskScore from backend to 0-100 scale (backend uses small integers)
+        const mappedScore = (typeof data.riskScore === 'number') ? Math.min(100, data.riskScore * 25) : 0;
+
+        setAnalysisResult({
+          riskLevel: (data.riskLevel || 'low').toLowerCase(),
+          riskScore: mappedScore,
+          flags: data.issues || [],
+          suggestions: [], // backend /check-email doesn't provide suggestions; keep empty
+          highlightedContent: inputValue,
+          detectedType: 'email',
+          // include raw response for debugging if needed
+          _raw: data
+        });
+      } catch (error) {
+        // fallback if API fails
+        setAnalysisResult({
+          riskLevel: 'high',
+          riskScore: 75,
+          flags: ['Failed to analyze email'],
+          suggestions: ['Verify sender via official channels'],
+          highlightedContent: inputValue,
+          detectedType: 'email'
+        });
+      }
+
+      // Award XP for email analysis
+      const analysisXP = 30;
+      updateUserXP(analysisXP);
+      setToastMessage(`Analysis complete! +${analysisXP} XP`);
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+        setIsAnalyzing(false);
+        // show quiz before results
+        setCurrentStep('quiz');
+      }, 1500);
+      return;
+    }
+
+    // Message branch: call /checkPhishing and present a simple 2-option quiz before results
+    if (inputType === 'message') {
+      try {
+        const response = await checkPhishing(inputValue);
+        setAnalysisResult(response.data);
+        // create a simple two-option quiz based on response
+        const simpleQuiz = createSimpleTwoOptionQuiz(response.data, 'message');
+        setQuizData(simpleQuiz);
+        setSelectedAnswer(null);
+      } catch (error) {
+        const fallback = {
+          riskLevel: 'high',
+          riskScore: 75,
+          flags: ['Suspicious patterns detected', 'Potential phishing attempt'],
+          suggestions: ['Do not click any links', 'Report to security team'],
+          highlightedContent: inputValue,
+          detectedType: inputType
+        };
+        setAnalysisResult(fallback);
+        const simpleQuiz = createSimpleTwoOptionQuiz(fallback, 'message');
+        setQuizData(simpleQuiz);
+        setSelectedAnswer(null);
+      }
+
+      // Award XP for message analysis (keep previous behavior)
+      const analysisXP = 30;
+      updateUserXP(analysisXP);
+      setToastMessage(`Analysis complete! +${analysisXP} XP`);
+      setShowToast(true);
+
+      setTimeout(() => {
+        setShowToast(false);
+        setIsAnalyzing(false);
+        // go to quiz step so user answers the 2-option quiz before viewing results
+        setCurrentStep('quiz');
+      }, 1500);
+      return;
+    }
+
+    // Link and other (non-domain/message) flow — keep existing phishing-check + quiz flow
+    // Generate quiz first
+    const quiz = generateQuiz(inputValue, inputType);
+    setQuizData(quiz);
   if (inputType === "link") {
     try {
       const { data } = await checkUrl(inputValue.trim());
@@ -267,6 +413,29 @@ if (inputType !== "link") {
     }, 2000);
   };
 
+
+  const handleAddToBlacklist = async (type, value) => {
+    if (!value) return;
+    setBlacklistLoading(true);
+    try {
+      await addToBlackList(type, value);
+      setBlacklistAdded(prev => ({
+        ...prev,
+        email: type === 'EMAIL' ? true : prev.email,
+        domain: type === 'URL' ? true : prev.domain
+      }));
+      setToastMessage('Added to blacklist');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
+    } catch (err) {
+      console.error('Failed to add to blacklist:', err);
+      setToastMessage('Failed to add to blacklist');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
+    } finally {
+      setBlacklistLoading(false);
+    }
+  };
    // --- URL -> UI mapper with layer-by-layer feedback + scoring ---
 // --- URL -> UI mapper with layer-by-layer feedback + scoring + plain-English feedback ---
 const mapUrlResponseToAnalysisResult = (raw, originalUrl) => {
@@ -411,7 +580,6 @@ const mapUrlResponseToAnalysisResult = (raw, originalUrl) => {
     emailAnalysis: undefined,
   };
 };
-
 
 
   const getAnalyzeButtonText = () => {
@@ -1004,6 +1172,27 @@ const mapUrlResponseToAnalysisResult = (raw, originalUrl) => {
                     </div>
                   </div>
 
+
+                  {/* Security Flags (always shown; display 'None' if empty) */}
+                  <div className="flags-section">
+                    <h3>Security Flags</h3>
+                    <div className="flags-list">
+                      {inputType === 'domain' ? (
+                        analysisResult.securityFlags ? (
+                          <div className="flag-item">
+                            <AlertTriangle size={16} />
+                            <span>{analysisResult.securityFlags}</span>
+                          </div>
+                        ) : (
+                          <div className="flag-item none">
+                            <AlertTriangle size={16} />
+                            <span>None</span>
+                          </div>
+                        )
+                      ) : (
+                        Array.isArray(analysisResult.flags) && analysisResult.flags.length > 0 ? (
+                          analysisResult.flags.map((flag, index) => (
+
                   {/* Security Flags */}
                   {inputType === "domain" && analysisResult.securityFlags && (
                     <div className="flags-section">
@@ -1023,14 +1212,44 @@ const mapUrlResponseToAnalysisResult = (raw, originalUrl) => {
                         <h3>Security Flags</h3>
                         <div className="flags-list">
                           {analysisResult.flags.map((flag, index) => (
+
                             <div key={index} className="flag-item">
                               <AlertTriangle size={16} />
                               <span>{flag}</span>
                             </div>
+
+                          ))
+                        ) : (
+                          <div className="flag-item none">
+                            <AlertTriangle size={16} />
+                            <span>None</span>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Suggestions (always shown; display 'None' if empty) */}
+                  <div className="suggestions-section">
+                    <h3>Suggestions</h3>
+                    <div className="suggestions-list">
+                      {Array.isArray(analysisResult.suggestions) && analysisResult.suggestions.length > 0 ? (
+                        <ul>
+                          {analysisResult.suggestions.map((sugg, i) => (
+                            <li key={i}>{sugg}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <div className="suggestion-none">None</div>
+                      )}
+                    </div>
+                  </div>
+
                           ))}
                         </div>
                       </div>
                     )}
+
 
                   {/* Recommended Actions */}
                   <div className="action-recommendations">
@@ -1052,14 +1271,51 @@ const mapUrlResponseToAnalysisResult = (raw, originalUrl) => {
                   </div>
 
                   {/* Community Reporting */}
+
+                  <div className="community-reporting" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <button 
+
                   <div className="community-reporting">
                     <button
+
                       className="community-report-btn"
                       onClick={handleReportToCommunity}
+                      style={{ padding: '10px 14px', fontSize: 14, minWidth: 160, borderRadius: 8 }}
                     >
                       <Users size={20} />
                       <span>Report to Community</span>
                     </button>
+
+                    {/* Email-specific blacklist buttons */}
+                    {inputType === 'email' && (
+                      <div className="blacklist-actions" style={{ marginTop: 0, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                        <button
+                          className="blacklist-btn"
+                          onClick={() => handleAddToBlacklist('EMAIL', inputValue)}
+                          disabled={blacklistLoading || blacklistAdded.email}
+                          title="Add this email address to the community blacklist"
+                          style={{ padding: '10px 14px', fontSize: 14, minWidth: 180, borderRadius: 8 }}
+                        >
+                          <span>{blacklistAdded.email ? 'Email Blacklisted' : 'Add Email to Blacklist'}</span>
+                        </button>
+
+                        {inputValue.includes('@') && (() => {
+                          const domain = inputValue.split('@')[1];
+                          return (
+                            <button
+                              key="blacklist-domain"
+                              className="blacklist-btn secondary"
+                              onClick={() => handleAddToBlacklist('URL', domain)}
+                              disabled={blacklistLoading || blacklistAdded.domain}
+                              title="Add the sender domain to the community blacklist"
+                              style={{ padding: '10px 14px', fontSize: 14, minWidth: 200, borderRadius: 8 }}
+                            >
+                              <span>{blacklistAdded.domain ? 'Domain Blacklisted' : `Add Domain (${domain}) to Blacklist`}</span>
+                            </button>
+                          );
+                        })()}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
