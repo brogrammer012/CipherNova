@@ -183,6 +183,28 @@ const CommunityPage = () => {
     }
   };
 
+  const getDetailedInfo = (report) => {
+    if (report.messageAnalysis) {
+      const threats = [];
+      if (report.messageAnalysis.hasUrgencyLanguage) threats.push("🚨 Urgent");
+      if (report.messageAnalysis.hasPrizeLanguage) threats.push("🎰 Prize");
+      if (report.messageAnalysis.requestsMoney) threats.push("💰 Money");
+      if (report.messageAnalysis.requestsPersonalInfo) threats.push("🔐 Personal Info");
+      if (report.messageAnalysis.impersonatesAuthority) threats.push("🏛️ Authority");
+      return threats.length > 0 ? threats.join(" ") : "";
+    }
+    
+    if (report.emailAnalysis) {
+      const threats = [];
+      if (report.emailAnalysis.isTyposquatting) threats.push("🚨 Typosquatting");
+      if (report.emailAnalysis.isTemporaryEmail) threats.push("⚠️ Temporary");
+      if (report.emailAnalysis.hasSuspiciousTld) threats.push("⚠️ Sus TLD");
+      return threats.length > 0 ? threats.join(" ") : "";
+    }
+    
+    return "";
+  };
+
   // Calculate pagination with null checks
   const filteredReports = reportedContent.filter(report => {
     if (!report) return false;
@@ -392,6 +414,24 @@ const CommunityPage = () => {
                         }
                       </span>
                       <span className="domain-text">{report.domain || 'Unknown'}</span>
+                      {report.analysisSummary && (
+                        <span className="analysis-summary" style={{ 
+                          display: 'block', 
+                          fontSize: '0.8em', 
+                          color: '#888', 
+                          marginTop: '4px' 
+                        }}>
+                          {report.analysisSummary}
+                        </span>
+                      )}
+                      {getDetailedInfo(report) && (
+                        <div className="threat-indicators" style={{ 
+                          marginTop: '4px', 
+                          fontSize: '0.75em' 
+                        }}>
+                          {getDetailedInfo(report)}
+                        </div>
+                      )}
                     </div>
                   </div>
                   

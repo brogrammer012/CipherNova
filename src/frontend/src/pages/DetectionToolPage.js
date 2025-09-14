@@ -103,6 +103,66 @@ const DetectionToolPage = () => {
       };
     }
 
+    // Generate quiz based on message analysis results with enhanced logic
+    if (type === "message" && analysisResult?.messageAnalysis) {
+      const messageAnalysis = analysisResult.messageAnalysis;
+      
+      // Determine the correct answer based on analysis results - prioritize by severity
+      let correctAnswer = "a";
+      let correctText = "No significant red flags detected";
+      
+      // Check in order of severity/importance
+      if (messageAnalysis.requestsPersonalInfo) {
+        correctAnswer = "d";
+        correctText = "Requests personal or financial information";
+      } else if (messageAnalysis.requestsMoney) {
+        correctAnswer = "d"; 
+        correctText = "Requests money transfer or payment";
+      } else if (messageAnalysis.hasPrizeLanguage) {
+        correctAnswer = "c";
+        correctText = "Claims you've won a prize or lottery";
+      } else if (messageAnalysis.hasUrgencyLanguage) {
+        correctAnswer = "b";
+        correctText = "Contains urgent language demanding immediate action";
+      } else if (messageAnalysis.impersonatesAuthority) {
+        correctAnswer = "b";
+        correctText = "Claims to be from a trusted authority";
+      } else if (messageAnalysis.hasThreatLanguage) {
+        correctAnswer = "b";
+        correctText = "Contains threatening or intimidating language";
+      } else if (messageAnalysis.usesClickBait || messageAnalysis.usesScarcityTactics) {
+        correctAnswer = "b";
+        correctText = "Uses manipulative language to create urgency";
+      }
+
+      return {
+        question: "What red flags do you notice in this message?",
+        options: [
+          {
+            id: "a",
+            text: "No significant red flags detected",
+            correct: correctAnswer === "a",
+          },
+          {
+            id: "b",
+            text: "Contains urgent language demanding immediate action",
+            correct: correctAnswer === "b",
+          },
+          {
+            id: "c",
+            text: "Claims you've won a prize or lottery",
+            correct: correctAnswer === "c",
+          },
+          {
+            id: "d",
+            text: "Requests personal or financial information",
+            correct: correctAnswer === "d",
+          },
+        ],
+        explanation: correctText
+      };
+    }
+
     const quizzes = {
       link: {
         question: "What makes this link potentially dangerous?",
@@ -117,40 +177,30 @@ const DetectionToolPage = () => {
           { id: "d", text: "Nothing seems dangerous", correct: false },
         ],
       },
-      message: {
-        question: "What red flags do you notice in this message?",
-        options: [
-          {
-            id: "a",
-            text: "Requests personal information urgently",
-            correct: true,
-          },
-          { id: "b", text: "Uses proper grammar and spelling", correct: false },
-          { id: "c", text: "Comes from a known contact", correct: false },
-          { id: "d", text: "No red flags present", correct: false },
-        ],
-      },
     };
-    return quizzes[type] || quizzes.message;
+    return quizzes[type] || quizzes.link;
   };
 
   const handleAnalyze = async () => {
     if (!inputValue.trim()) return;
     setIsAnalyzing(true);
+    let currentAnalysisResult = null;
     
     // For domain, skip quiz and call whoisLookup
     if (inputType === "domain") {
       try {
         const response = await whoisLookup(inputValue);
-        setAnalysisResult(response.data);
+        currentAnalysisResult = response.data;
+        setAnalysisResult(currentAnalysisResult);
       } catch (error) {
-        setAnalysisResult({
+        currentAnalysisResult = {
           riskLevel: "high risk",
           riskScore: 100,
           suspiciousElements: "WHOIS lookup failed",
           securityFlags: "Unable to analyze domain",
           whois: null,
-        });
+        };
+        setAnalysisResult(currentAnalysisResult);
       }
       setTimeout(() => {
         setIsAnalyzing(false);
@@ -162,18 +212,18 @@ const DetectionToolPage = () => {
     if (inputType === "link") {
       try {
         const { data } = await checkUrl(inputValue.trim());
-        setAnalysisResult(
-          mapUrlResponseToAnalysisResult(data, inputValue.trim())
-        );
+        currentAnalysisResult = mapUrlResponseToAnalysisResult(data, inputValue.trim());
+        setAnalysisResult(currentAnalysisResult);
       } catch (error) {
-        setAnalysisResult({
+        currentAnalysisResult = {
           riskLevel: "high",
           riskScore: 75,
           flags: ["URL check failed", "Potential phishing attempt"],
           suggestions: ["Do not click the link", "Report to security team"],
           highlightedContent: inputValue,
           detectedType: "link",
-        });
+        };
+        setAnalysisResult(currentAnalysisResult);
       }
     }
 
@@ -181,33 +231,37 @@ const DetectionToolPage = () => {
     if (inputType === "email") {
       try {
         const response = await checkEmail(inputValue.trim());
-        setAnalysisResult(response.data);
+        currentAnalysisResult = response.data;
+        setAnalysisResult(currentAnalysisResult);
       } catch (error) {
-        setAnalysisResult({
+        currentAnalysisResult = {
           riskLevel: "high",
           riskScore: 75,
           flags: ["Email analysis failed", "Potential security risk"],
           suggestions: ["Verify email through alternative means", "Do not trust this email"],
           highlightedContent: inputValue,
           detectedType: "email",
-        });
+        };
+        setAnalysisResult(currentAnalysisResult);
       }
     }
 
-    // For other types (message), use the existing checkPhishing endpoint
+    // For message types, use the checkPhishing endpoint
     if (inputType === "message") {
       try {
         const response = await checkPhishing(inputValue);
-        setAnalysisResult(response.data);
+        currentAnalysisResult = response.data;
+        setAnalysisResult(currentAnalysisResult);
       } catch (error) {
-        setAnalysisResult({
+        currentAnalysisResult = {
           riskLevel: "high",
           riskScore: 75,
           flags: ["Suspicious patterns detected", "Potential phishing attempt"],
           suggestions: ["Do not click any links", "Report to security team"],
           highlightedContent: inputValue,
           detectedType: inputType,
-        });
+        };
+        setAnalysisResult(currentAnalysisResult);
       }
     }
 
@@ -221,8 +275,8 @@ const DetectionToolPage = () => {
       setShowToast(false);
       setIsAnalyzing(false);
       
-      // Generate quiz based on analysis results
-      const quiz = generateQuiz(inputValue, inputType, analysisResult);
+      // Generate quiz based on analysis results using the current result
+      const quiz = generateQuiz(inputValue, inputType, currentAnalysisResult);
       setQuizData(quiz);
       setCurrentStep("quiz");
     }, 2000);
@@ -770,7 +824,7 @@ const mapUrlResponseToAnalysisResult = (raw, originalUrl) => {
                         {inputType === "link" &&
                           "Check URLs carefully for misspellings, suspicious domains, or redirects to unfamiliar sites."}
                         {inputType === "message" &&
-                          "Be wary of messages requesting personal information, especially those creating a sense of urgency."}
+                          "Be wary of messages with urgent language, prize claims, or requests for personal information. Legitimate organizations rarely request sensitive data via unsolicited messages."}
                       </p>
                     </div>
                   </div>
@@ -1080,6 +1134,192 @@ const mapUrlResponseToAnalysisResult = (raw, originalUrl) => {
                             <span className="detail-value">Domain has suspiciously long subdomains</span>
                           </div>
                         )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Message Analysis Results */}
+                  {inputType === "message" && analysisResult?.messageAnalysis && (
+                    <div className="message-analysis">
+                      <h3>Message Analysis</h3>
+                      
+                      {/* High Risk Indicators */}
+                      {(analysisResult.messageAnalysis.hasUrgencyLanguage || 
+                        analysisResult.messageAnalysis.hasPrizeLanguage || 
+                        analysisResult.messageAnalysis.hasThreatLanguage || 
+                        analysisResult.messageAnalysis.requestsMoney || 
+                        analysisResult.messageAnalysis.requestsPersonalInfo) && (
+                        <div className="analysis-category high-risk">
+                          <div className="category-header">
+                            <AlertTriangle size={20} className="category-icon" />
+                            <h4>High Risk Indicators</h4>
+                          </div>
+                          <div className="indicators-grid">
+                            {analysisResult.messageAnalysis.hasUrgencyLanguage && (
+                              <div className="indicator-card danger">
+                                <div className="indicator-icon">⚡</div>
+                                <div className="indicator-content">
+                                  <span className="indicator-title">Urgent Language</span>
+                                  <span className="indicator-description">Contains urgent or threatening language</span>
+                                </div>
+                              </div>
+                            )}
+                            {analysisResult.messageAnalysis.hasPrizeLanguage && (
+                              <div className="indicator-card danger">
+                                <div className="indicator-icon">🎰</div>
+                                <div className="indicator-content">
+                                  <span className="indicator-title">Prize Claims</span>
+                                  <span className="indicator-description">Claims you've won a prize or lottery</span>
+                                </div>
+                              </div>
+                            )}
+                            {analysisResult.messageAnalysis.hasThreatLanguage && (
+                              <div className="indicator-card danger">
+                                <div className="indicator-icon">⚠️</div>
+                                <div className="indicator-content">
+                                  <span className="indicator-title">Threatening Language</span>
+                                  <span className="indicator-description">Contains threatening or intimidating language</span>
+                                </div>
+                              </div>
+                            )}
+                            {analysisResult.messageAnalysis.requestsMoney && (
+                              <div className="indicator-card danger">
+                                <div className="indicator-icon">💰</div>
+                                <div className="indicator-content">
+                                  <span className="indicator-title">Money Request</span>
+                                  <span className="indicator-description">Requests money transfer or payment</span>
+                                </div>
+                              </div>
+                            )}
+                            {analysisResult.messageAnalysis.requestsPersonalInfo && (
+                              <div className="indicator-card danger">
+                                <div className="indicator-icon">🔐</div>
+                                <div className="indicator-content">
+                                  <span className="indicator-title">Personal Info Request</span>
+                                  <span className="indicator-description">Requests personal or financial information</span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Medium Risk Indicators */}
+                      {(analysisResult.messageAnalysis.impersonatesAuthority || 
+                        analysisResult.messageAnalysis.usesClickBait || 
+                        analysisResult.messageAnalysis.usesScarcityTactics || 
+                        analysisResult.messageAnalysis.hasTooGoodOffers || 
+                        analysisResult.messageAnalysis.containsLinks > 0) && (
+                        <div className="analysis-category medium-risk">
+                          <div className="category-header">
+                            <Clock size={20} className="category-icon" />
+                            <h4>Suspicious Indicators</h4>
+                          </div>
+                          <div className="indicators-grid">
+                            {analysisResult.messageAnalysis.impersonatesAuthority && (
+                              <div className="indicator-card warning">
+                                <div className="indicator-icon">🏛️</div>
+                                <div className="indicator-content">
+                                  <span className="indicator-title">Authority Impersonation</span>
+                                  <span className="indicator-description">Claims to be from government or trusted organization</span>
+                                </div>
+                              </div>
+                            )}
+                            {analysisResult.messageAnalysis.usesClickBait && (
+                              <div className="indicator-card warning">
+                                <div className="indicator-icon">👆</div>
+                                <div className="indicator-content">
+                                  <span className="indicator-title">Click Bait</span>
+                                  <span className="indicator-description">Uses action-demanding language</span>
+                                </div>
+                              </div>
+                            )}
+                            {analysisResult.messageAnalysis.usesScarcityTactics && (
+                              <div className="indicator-card warning">
+                                <div className="indicator-icon">⏰</div>
+                                <div className="indicator-content">
+                                  <span className="indicator-title">Scarcity Tactics</span>
+                                  <span className="indicator-description">Creates false sense of urgency or scarcity</span>
+                                </div>
+                              </div>
+                            )}
+                            {analysisResult.messageAnalysis.hasTooGoodOffers && (
+                              <div className="indicator-card warning">
+                                <div className="indicator-icon">🎁</div>
+                                <div className="indicator-content">
+                                  <span className="indicator-title">Too Good to be True</span>
+                                  <span className="indicator-description">Contains unrealistic offers or promises</span>
+                                </div>
+                              </div>
+                            )}
+                            {analysisResult.messageAnalysis.containsLinks > 0 && (
+                              <div className="indicator-card warning">
+                                <div className="indicator-icon">🔗</div>
+                                <div className="indicator-content">
+                                  <span className="indicator-title">External Links</span>
+                                  <span className="indicator-description">Contains {analysisResult.messageAnalysis.containsLinks} external link(s)</span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Low Risk Indicators */}
+                      {(analysisResult.messageAnalysis.hasGrammarErrors || 
+                        analysisResult.messageAnalysis.usesGenericGreeting) && (
+                        <div className="analysis-category low-risk">
+                          <div className="category-header">
+                            <Eye size={20} className="category-icon" />
+                            <h4>Minor Concerns</h4>
+                          </div>
+                          <div className="indicators-grid">
+                            {analysisResult.messageAnalysis.hasGrammarErrors && (
+                              <div className="indicator-card info">
+                                <div className="indicator-icon">📝</div>
+                                <div className="indicator-content">
+                                  <span className="indicator-title">Grammar Issues</span>
+                                  <span className="indicator-description">Contains spelling or grammar errors</span>
+                                </div>
+                              </div>
+                            )}
+                            {analysisResult.messageAnalysis.usesGenericGreeting && (
+                              <div className="indicator-card info">
+                                <div className="indicator-icon">👋</div>
+                                <div className="indicator-content">
+                                  <span className="indicator-title">Generic Greeting</span>
+                                  <span className="indicator-description">Uses generic greeting (possible mass message)</span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Summary Section */}
+                      <div className="analysis-summary-section">
+                        <div className="summary-header">
+                          <Shield size={20} />
+                          <h4>Analysis Summary</h4>
+                        </div>
+                        <div className="summary-stats">
+                          <div className="stat-item">
+                            <span className="stat-number">
+                              {Object.values(analysisResult.messageAnalysis).filter(val => val === true).length}
+                            </span>
+                            <span className="stat-label">Indicators Found</span>
+                          </div>
+                          <div className="stat-item">
+                            <span className="stat-number">{analysisResult.riskScore}</span>
+                            <span className="stat-label">Risk Score</span>
+                          </div>
+                          <div className="stat-item">
+                            <span className={`stat-number risk-${analysisResult.riskLevel}`}>
+                              {analysisResult.riskLevel.toUpperCase()}
+                            </span>
+                            <span className="stat-label">Risk Level</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   )}
