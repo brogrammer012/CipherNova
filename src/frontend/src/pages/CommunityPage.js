@@ -170,7 +170,8 @@ const CommunityPage = () => {
   };
 
   const getTypeIcon = (type) => {
-    switch (type.toLowerCase()) {
+    const t = (type || '').toString().toLowerCase();
+    switch (t) {
       case 'email': return <Mail size={16} />;
       case 'link': return <LinkIcon size={16} />;
       case 'phone': return <Phone size={16} />;
@@ -179,19 +180,29 @@ const CommunityPage = () => {
   };
 
   // Calculate pagination
-  const filteredReports = reportedContent.filter(report => 
-    report.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    report.domain.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    report.type.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const searchLower = (searchTerm || '').toString().toLowerCase();
+  const filteredReports = reportedContent.filter(report => {
+    const content = (report?.content || '').toString().toLowerCase();
+    const domain = (report?.domain || '').toString().toLowerCase();
+    const type = (report?.type || '').toString().toLowerCase();
+    return content.includes(searchLower) || domain.includes(searchLower) || type.includes(searchLower);
+  });
+
+  const getSortableValue = (obj, key) => {
+    const v = obj?.[key];
+    if (typeof v === 'number') return v;
+    if (v == null) return '';
+    return v.toString().toLowerCase();
+  };
 
   const sortedReports = [...filteredReports].sort((a, b) => {
-    if (a[sortConfig.key] < b[sortConfig.key]) {
-      return sortConfig.direction === 'asc' ? -1 : 1;
+    const aVal = getSortableValue(a, sortConfig.key);
+    const bVal = getSortableValue(b, sortConfig.key);
+    if (typeof aVal === 'number' && typeof bVal === 'number') {
+      return sortConfig.direction === 'asc' ? aVal - bVal : bVal - aVal;
     }
-    if (a[sortConfig.key] > b[sortConfig.key]) {
-      return sortConfig.direction === 'asc' ? 1 : -1;
-    }
+    if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+    if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
     return 0;
   });
 
@@ -211,6 +222,36 @@ const CommunityPage = () => {
     }
     setSortConfig({ key, direction });
   };
+
+  // Shared button styles and color tokens (align color scheme)
+  // switched from blue -> green to match the app color scheme
+  const primaryColor = '#22c55e'; // green-ish primary (Tailwind green-500)
+  const neutralBg = 'transparent';
+  const neutralBorder = '1px solid rgba(255,255,255,0.06)';
+  const btnBase = {
+    padding: '8px 12px',
+    fontSize: 14,
+    minWidth: 48,
+    minHeight: 36,
+    borderRadius: 8,
+    border: neutralBorder,
+    background: neutralBg,
+    color: '#E6F0FF',
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8
+  };
+  const indicatorStyle = (active) => ({
+    width: 12,
+    height: 12,
+    borderRadius: 12,
+    border: active ? 'none' : '1px solid rgba(255,255,255,0.12)',
+    background: active ? primaryColor : 'transparent',
+    cursor: 'pointer',
+    margin: 4
+  });
 
   if (loading) {
     return (
@@ -292,12 +333,24 @@ const CommunityPage = () => {
           {/* Safety Tips Carousel */}
           <div className="tips-section">
             <h2 className="section-title">Safety Tips</h2>
-            <div className="tips-carousel">
-              <button className="carousel-btn prev" onClick={prevTip}>
-                <ChevronLeft size={20} />
+            <div className="tips-carousel" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <button
+                className="carousel-btn prev"
+                onClick={prevTip}
+                style={{
+                  ...btnBase,
+                  minWidth: 44,
+                  minHeight: 44,
+                  background: primaryColor,
+                  color: '#fff',
+                  border: 'none'
+                }}
+                aria-label="Previous tip"
+              >
+                <ChevronLeft size={18} />
               </button>
               
-              <div className="tip-card">
+              <div className="tip-card" style={{ flex: 1 }}>
                 <div className="tip-icon">
                   {safetyTips[currentTip].icon}
                 </div>
@@ -307,17 +360,31 @@ const CommunityPage = () => {
                 </div>
               </div>
               
-              <button className="carousel-btn next" onClick={nextTip}>
-                <ChevronRight size={20} />
+              <button
+                className="carousel-btn next"
+                onClick={nextTip}
+                style={{
+                  ...btnBase,
+                  minWidth: 44,
+                  minHeight: 44,
+                  background: primaryColor,
+                  color: '#fff',
+                  border: 'none'
+                }}
+                aria-label="Next tip"
+              >
+                <ChevronRight size={18} />
               </button>
             </div>
             
-            <div className="carousel-indicators">
+            <div className="carousel-indicators" style={{ display: 'flex', justifyContent: 'center', marginTop: 8 }}>
               {safetyTips.map((_, index) => (
                 <button
                   key={index}
                   className={`indicator ${index === currentTip ? 'active' : ''}`}
                   onClick={() => setCurrentTip(index)}
+                  style={indicatorStyle(index === currentTip)}
+                  aria-label={`Tip ${index + 1}`}
                 />
               ))}
             </div>
@@ -367,19 +434,19 @@ const CommunityPage = () => {
                   <div className="table-cell type">
                     <div className="type-indicator">
                       {getTypeIcon(report.type)}
-                      <span>{report.type}</span>
+                      <span>{report.type || 'Unknown'}</span>
                     </div>
                   </div>
                   
                   <div className="table-cell content">
                     <div className="content-preview">
                       <span className="content-text">
-                        {report.content.length > 50 
-                          ? `${report.content.substring(0, 50)}...` 
-                          : report.content
+                        {report?.content
+                          ? (report.content.length > 50 ? `${report.content.substring(0, 50)}...` : report.content)
+                          : '—'
                         }
                       </span>
-                      <span className="domain-text">{report.domain}</span>
+                      <span className="domain-text">{report.domain || 'N/A'}</span>
                     </div>
                   </div>
                   
@@ -390,33 +457,72 @@ const CommunityPage = () => {
                         backgroundColor: getRiskColor(report.riskLevel)
                       }}
                     >
-                      {report.riskLevel.toUpperCase()}
+                      {(report.riskLevel || 'unknown').toString().toUpperCase()}
                     </span>
                   </div>
                   
                   <div className="table-cell reports">
-                    <span className="report-count">{report.reports}</span>
+                    <span className="report-count">{report.reports || 0}</span>
                   </div>
                   
                   <div className="table-cell date">
                     <div className="date-info">
                       <Calendar size={14} />
-                      <span>{report.dateReported}</span>
+                      <span>{report.dateReported || report.date || 'N/A'}</span>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="pagination">
-              <button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>
+            <div className="pagination" style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 12 }}>
+              <button
+                onClick={() => paginate(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                style={{
+                  ...btnBase,
+                  opacity: currentPage === 1 ? 0.5 : 1,
+                  background: 'rgba(255,255,255,0.03)',
+                  color: '#E6F0FF'
+                }}
+                aria-label="Previous page"
+              >
                 Previous
               </button>
-              {[...Array(totalPages).keys()].map((pageNumber) => (
-                <button key={pageNumber} onClick={() => paginate(pageNumber + 1)} className={currentPage === pageNumber + 1 ? 'active' : ''}>
-                  {pageNumber + 1}
-                </button>
-              ))}
-              <button onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages}>
+              
+              {[...Array(totalPages).keys()].map((pageNumber) => {
+                const page = pageNumber + 1;
+                const active = currentPage === page;
+                return (
+                  <button
+                    key={pageNumber}
+                    onClick={() => paginate(page)}
+                    className={active ? 'active' : ''}
+                    style={{
+                      ...btnBase,
+                      minWidth: 40,
+                      padding: '8px 10px',
+                      background: active ? primaryColor : 'transparent',
+                      color: active ? '#fff' : '#E6F0FF',
+                      border: active ? 'none' : neutralBorder
+                    }}
+                    aria-label={`Page ${page}`}
+                  >
+                    {page}
+                  </button>
+                );
+              })}
+              
+              <button
+                onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+                style={{
+                  ...btnBase,
+                  opacity: currentPage === totalPages ? 0.5 : 1,
+                  background: 'rgba(255,255,255,0.03)',
+                  color: '#E6F0FF'
+                }}
+                aria-label="Next page"
+              >
                 Next
               </button>
             </div>
@@ -429,9 +535,18 @@ const CommunityPage = () => {
                 <h2>Help Protect the Community</h2>
                 <p>Found something suspicious? Report it to help keep everyone safe.</p>
               </div>
-              <button 
+              <button
                 className="cta-button"
                 onClick={() => navigate('/detection-tool')}
+                style={{
+                  ...btnBase,
+                  background: primaryColor,
+                  color: '#fff',
+                  minWidth: 220,
+                  gap: 10,
+                  border: 'none',
+                  boxShadow: `0 4px 12px ${primaryColor}33`
+                }}
               >
                 <Shield size={20} />
                 <span>Report New Suspicious Content</span>
