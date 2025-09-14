@@ -24,6 +24,7 @@ import {
   XCircle
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
+import { getCommunityPosts } from '../api';
 import '../styles/pages/CommunityPage.css';
 
 const CommunityPage = () => {
@@ -77,67 +78,46 @@ const CommunityPage = () => {
   useEffect(() => {
     const fetchCommunityData = async () => {
       try {
-        // Load community reports from localStorage and merge with mock data
+        // Load community reports from localStorage (user-submitted)
         const userReports = JSON.parse(localStorage.getItem('communityReports') || '[]');
-        
-        // Mock data for demonstration
-        const mockReports = [
-          {
-            id: 1,
-            type: 'Email',
-            content: 'Urgent: Your account will be suspended unless you verify immediately',
-            domain: 'fake-bank.com',
-            riskLevel: 'high',
-            reports: 23,
-            dateReported: '2024-01-15',
-            upvotes: 15
-          },
-          {
-            id: 2,
-            type: 'Link',
-            content: 'https://suspicious-site.net/login',
-            domain: 'suspicious-site.net',
-            riskLevel: 'high',
-            reports: 18,
-            dateReported: '2024-01-14',
-            upvotes: 12
-          },
-          {
-            id: 3,
-            type: 'Phone',
-            content: '+1-555-SCAM-123 claiming to be from Microsoft',
-            domain: 'Unknown',
-            riskLevel: 'medium',
-            reports: 8,
-            dateReported: '2024-01-13',
-            upvotes: 5
-          },
-          {
-            id: 4,
-            type: 'Email',
-            content: 'You have won $1,000,000! Click here to claim',
-            domain: 'lottery-scam.org',
-            riskLevel: 'high',
-            reports: 31,
-            dateReported: '2024-01-12',
-            upvotes: 22
-          },
-          {
-            id: 5,
-            type: 'Link',
-            content: 'https://phishing-example.com/secure-login',
-            domain: 'phishing-example.com',
-            riskLevel: 'medium',
-            reports: 6,
-            dateReported: '2024-01-11',
-            upvotes: 3
-          }
-        ];
 
-        // Combine user reports with mock data, user reports first
-        const allReports = [...userReports, ...mockReports];
-        setReportedContent(allReports);
+        // Fetch reports from backend
+        let apiReports = [];
+        try {
+          const resp = await getCommunityPosts();
+          apiReports = Array.isArray(resp?.data) ? resp.data : [];
+        } catch (err) {
+          console.warn('Failed to fetch community posts from API, falling back to local data:', err?.message || err);
+        }
 
+        // Map API shape to frontend shape
+        const mappedApiReports = apiReports.map(item => {
+          const content = item.content || '';
+          const isUrl = typeof content === 'string' && (content.startsWith('http') || content.startsWith('www.'));
+          let domain = item.domain || 'N/A';
+          try {
+            if (isUrl) domain = new URL(content).hostname;
+          } catch (e) { /* leave domain as provided or 'N/A' */ }
+
+          return {
+            id: item.id,
+            type: item.type || 'Unknown',
+            content,
+            domain,
+            riskLevel: (item.risk_level || item.riskLevel || 'LOW').toString().toLowerCase(),
+            reports: item.reports || 0,
+            dateReported: item.date || item.dateReported || '',
+            upvotes: item.upvotes || 0
+          };
+        });
+
+        // Combine user reports (from localStorage) first, then API reports
+        const combined = [...userReports, ...mappedApiReports];
+
+        // Set state
+        setReportedContent(combined);
+
+        // Keep mock stats/top reporters for now (existing placeholders)
         const mockStats = {
           totalReportsThisWeek: 89,
           newThreatsIdentified: 12,
@@ -150,7 +130,6 @@ const CommunityPage = () => {
           { id: 3, name: 'PhishHunter', reports: 22, level: 'Intermediate', avatar: '🎯' }
         ];
 
-        setReportedContent(mockReports);
         setWeeklyStats(mockStats);
         setTopReporters(mockTopReporters);
         setLoading(false);
@@ -465,5 +444,4 @@ const CommunityPage = () => {
     </div>
   );
 };
-
 export default CommunityPage;
