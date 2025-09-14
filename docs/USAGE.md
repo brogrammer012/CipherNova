@@ -147,8 +147,8 @@ The system detects 12 different types of phishing indicators:
 
 ### Demo Materials
 Check out the comprehensive demos:
-- **[Demo Video](../demo/demo.mp4)** - Full walkthrough of all features
-- **[Demo Presentation](../demo/demo.pptx)** - Technical overview and use cases
+- **[Demo Video](../demo/Demovid(1).mp4)** - Full walkthrough of all features
+- **[Demo Presentation](../demo/Presentation - CyberPulse.pptx)** - Technical overview and use cases
 
 ### Example Test Cases
 
