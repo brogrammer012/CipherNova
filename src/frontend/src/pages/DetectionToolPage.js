@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { checkPhishing, whoisLookup ,checkUrl} from '../api';
+import { checkPhishing, whoisLookup, checkUrl, checkEmail } from '../api';
 import DomainRegistrarInfo from '../components/DomainRegistrarInfo';
 import DomainImportantDates from '../components/DomainImportantDates';
 import { Link, useNavigate } from 'react-router-dom';
@@ -55,21 +55,55 @@ const DetectionToolPage = () => {
     }
   };
 
-  const generateQuiz = (content, type) => {
-    const quizzes = {
-      email: {
-        question: "What looks suspicious about this email?",
+  const generateQuiz = (content, type, analysisResult = null) => {
+    // Generate quiz based on email analysis results
+    if (type === "email" && analysisResult?.emailAnalysis) {
+      const emailAnalysis = analysisResult.emailAnalysis;
+      
+      // Determine the correct answer based on analysis results
+      let correctAnswer = "a";
+      let correctText = "No significant red flags detected";
+      
+      if (emailAnalysis.isTyposquatting) {
+        correctAnswer = "b";
+        correctText = "Domain appears to mimic legitimate email providers";
+      } else if (emailAnalysis.isTemporaryEmail) {
+        correctAnswer = "c";
+        correctText = "Uses temporary/disposable email service";
+      } else if (emailAnalysis.hasSuspiciousTld) {
+        correctAnswer = "d";
+        correctText = "Uses suspicious top-level domain";
+      }
+
+      return {
+        question: "What makes this email address potentially suspicious?",
         options: [
           {
             id: "a",
-            text: "Urgent language demanding immediate action",
-            correct: true,
+            text: "No significant red flags detected",
+            correct: correctAnswer === "a",
           },
-          { id: "b", text: "Professional email signature", correct: false },
-          { id: "c", text: "Clear sender identification", correct: false },
-          { id: "d", text: "Nothing seems suspicious", correct: false },
+          {
+            id: "b",
+            text: "Domain appears to mimic legitimate email providers",
+            correct: correctAnswer === "b",
+          },
+          {
+            id: "c",
+            text: "Uses temporary/disposable email service",
+            correct: correctAnswer === "c",
+          },
+          {
+            id: "d",
+            text: "Uses suspicious top-level domain",
+            correct: correctAnswer === "d",
+          },
         ],
-      },
+        explanation: correctText
+      };
+    }
+
+    const quizzes = {
       link: {
         question: "What makes this link potentially dangerous?",
         options: [
@@ -97,12 +131,13 @@ const DetectionToolPage = () => {
         ],
       },
     };
-    return quizzes[type] || quizzes.email;
+    return quizzes[type] || quizzes.message;
   };
 
   const handleAnalyze = async () => {
     if (!inputValue.trim()) return;
     setIsAnalyzing(true);
+    
     // For domain, skip quiz and call whoisLookup
     if (inputType === "domain") {
       try {
@@ -124,51 +159,71 @@ const DetectionToolPage = () => {
       return;
     }
 
-  if (inputType === "link") {
-    try {
-      const { data } = await checkUrl(inputValue.trim());
-      setAnalysisResult(
-        mapUrlResponseToAnalysisResult(data, inputValue.trim())
-      );
-    } catch (error) {
-      setAnalysisResult({
-        riskLevel: "high",
-        riskScore: 75,
-        flags: ["URL check failed", "Potential phishing attempt"],
-        suggestions: ["Do not click the link", "Report to security team"],
-        highlightedContent: inputValue,
-        detectedType: "link",
-      });
+    if (inputType === "link") {
+      try {
+        const { data } = await checkUrl(inputValue.trim());
+        setAnalysisResult(
+          mapUrlResponseToAnalysisResult(data, inputValue.trim())
+        );
+      } catch (error) {
+        setAnalysisResult({
+          riskLevel: "high",
+          riskScore: 75,
+          flags: ["URL check failed", "Potential phishing attempt"],
+          suggestions: ["Do not click the link", "Report to security team"],
+          highlightedContent: inputValue,
+          detectedType: "link",
+        });
+      }
     }
-  }
 
-   const quiz = generateQuiz(inputValue, inputType);
-setQuizData(quiz);
+    // Handle email type with the new email endpoint
+    if (inputType === "email") {
+      try {
+        const response = await checkEmail(inputValue.trim());
+        setAnalysisResult(response.data);
+      } catch (error) {
+        setAnalysisResult({
+          riskLevel: "high",
+          riskScore: 75,
+          flags: ["Email analysis failed", "Potential security risk"],
+          suggestions: ["Verify email through alternative means", "Do not trust this email"],
+          highlightedContent: inputValue,
+          detectedType: "email",
+        });
+      }
+    }
 
-// IMPORTANT: do NOT overwrite link results here
-if (inputType !== "link") {
-  try {
-    const response = await checkPhishing(inputValue);
-    setAnalysisResult(response.data);
-  } catch (error) {
-    setAnalysisResult({
-      riskLevel: "high",
-      riskScore: 75,
-      flags: ["Suspicious patterns detected", "Potential phishing attempt"],
-      suggestions: ["Do not click any links", "Report to security team"],
-      highlightedContent: inputValue,
-      detectedType: inputType,
-    });
-  }
-}
+    // For other types (message), use the existing checkPhishing endpoint
+    if (inputType === "message") {
+      try {
+        const response = await checkPhishing(inputValue);
+        setAnalysisResult(response.data);
+      } catch (error) {
+        setAnalysisResult({
+          riskLevel: "high",
+          riskScore: 75,
+          flags: ["Suspicious patterns detected", "Potential phishing attempt"],
+          suggestions: ["Do not click any links", "Report to security team"],
+          highlightedContent: inputValue,
+          detectedType: inputType,
+        });
+      }
+    }
+
     // Award XP for successful analysis
     const analysisXP = 30;
     updateUserXP(analysisXP);
     setToastMessage(`Analysis complete! +${analysisXP} XP`);
     setShowToast(true);
+    
     setTimeout(() => {
       setShowToast(false);
       setIsAnalyzing(false);
+      
+      // Generate quiz based on analysis results
+      const quiz = generateQuiz(inputValue, inputType, analysisResult);
+      setQuizData(quiz);
       setCurrentStep("quiz");
     }, 2000);
   };
@@ -427,10 +482,10 @@ const mapUrlResponseToAnalysisResult = (raw, originalUrl) => {
     detectedType: 'link',
 
     // extra feedback
-    verdict: norm.result,       // ALLOW | REVIEW | BLOCK
-    verdictText,                // friendly sentence
-    layers,                     // technical list (still useful)
-    userFeedback,               // plain-English bullet points
+    verdict: norm.result,       
+    verdictText,               
+    layers,                     
+    userFeedback,              
 
     // keep email-only fields undefined
     domainInfo: undefined,
@@ -456,7 +511,7 @@ const mapUrlResponseToAnalysisResult = (raw, originalUrl) => {
   const getPlaceholder = () => {
     switch (inputType) {
       case "email":
-        return "Paste email content here...";
+        return "Enter email address (e.g. user@example.com)";
       case "link":
         return "Paste link here...";
       case "message":
@@ -980,55 +1035,54 @@ const mapUrlResponseToAnalysisResult = (raw, originalUrl) => {
                     </div>
                   )}
 
-                  {/* Suspicious Elements Detected */}
-                  <div className="content-analysis">
-                    <h3>Suspicious Elements Detected</h3>
-                    <div className="highlighted-content">
-                      {inputType === "domain" ? (
-                        (() => {
-                          const score = analysisResult.riskScore;
-                          if (score === 0) return <span>None</span>;
-                          // If suspiciousElements is a string, split by ';' or display as is
-                          if (analysisResult.suspiciousElements) {
-                            if (
-                              Array.isArray(analysisResult.suspiciousElements)
-                            ) {
-                              return (
-                                <ul>
-                                  {analysisResult.suspiciousElements.map(
-                                    (el, idx) => (
-                                      <li key={idx}>{el}</li>
-                                    )
-                                  )}
-                                </ul>
-                              );
-                            } else {
-                              // Try splitting by common delimiters
-                              const items = analysisResult.suspiciousElements
-                                .split(/;|\.|\n/)
-                                .map((s) => s.trim())
-                                .filter(Boolean);
-                              return (
-                                <ul>
-                                  {items.map((el, idx) => (
-                                    <li key={idx}>{el}</li>
-                                  ))}
-                                </ul>
-                              );
-                            }
-                          }
-                          return <span>Potential issues detected</span>;
-                        })()
-                      ) : (
-                        <div
-                          dangerouslySetInnerHTML={{
-                            __html:
-                              analysisResult.highlightedContent || inputValue,
-                          }}
-                        />
-                      )}
+                  {/* Email Analysis Results */}
+                  {inputType === "email" && analysisResult?.emailAnalysis && (
+                    <div className="email-analysis">
+                      <h3>Email Address Analysis</h3>
+                      <div className="email-details">
+                        <div className="detail-item">
+                          <span className="detail-label">Domain:</span>
+                          <span className="detail-value">{analysisResult.emailAnalysis.domain}</span>
+                        </div>
+                        <div className="detail-item">
+                          <span className="detail-label">Provider Type:</span>
+                          <span className={`detail-value ${analysisResult.emailAnalysis.isCommonProvider ? 'safe' : 'warning'}`}>
+                            {analysisResult.emailAnalysis.isCommonProvider ? 'Common Provider' : 'Custom/Unknown Provider'}
+                          </span>
+                        </div>
+                        {analysisResult.emailAnalysis.isTemporaryEmail && (
+                          <div className="detail-item warning">
+                            <span className="detail-label">⚠️ Temporary Email:</span>
+                            <span className="detail-value">This appears to be a disposable email service</span>
+                          </div>
+                        )}
+                        {analysisResult.emailAnalysis.isTyposquatting && (
+                          <div className="detail-item danger">
+                            <span className="detail-label">🚨 Typosquatting:</span>
+                            <span className="detail-value">Domain mimics legitimate email providers</span>
+                          </div>
+                        )}
+                        {analysisResult.emailAnalysis.hasSuspiciousTld && (
+                          <div className="detail-item warning">
+                            <span className="detail-label">⚠️ Suspicious TLD:</span>
+                            <span className="detail-value">Uses a domain extension often associated with abuse</span>
+                          </div>
+                        )}
+                        {analysisResult.emailAnalysis.hasNumbersInDomain && (
+                          <div className="detail-item warning">
+                            <span className="detail-label">⚠️ Numbers in Domain:</span>
+                            <span className="detail-value">Domain contains suspicious number patterns</span>
+                          </div>
+                        )}
+                        {analysisResult.emailAnalysis.hasLongSubdomains && (
+                          <div className="detail-item warning">
+                            <span className="detail-label">⚠️ Long Subdomains:</span>
+                            <span className="detail-value">Domain has suspiciously long subdomains</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Security Flags */}
                   {inputType === "domain" && analysisResult.securityFlags && (
@@ -1057,19 +1111,52 @@ const mapUrlResponseToAnalysisResult = (raw, originalUrl) => {
                         </div>
                       </div>
                     )}
+                  {inputType !== "domain" &&
+                    (!analysisResult.flags || analysisResult.flags.length === 0) && (
+                      <div className="flags-section">
+                        <h3>Security Flags</h3>
+                        <div className="no-flags">
+                          <CheckCircle size={16} />
+                          <span>No security flags detected</span>
+                        </div>
+                      </div>
+                    )}
+
+                  {/* Suggestions Section */}
+                  {analysisResult.suggestions && analysisResult.suggestions.length > 0 && (
+                    <div className="suggestions-section">
+                      <h3>Recommended Actions</h3>
+                      <div className="suggestions-list">
+                        {analysisResult.suggestions.map((suggestion, index) => (
+                          <div key={index} className="suggestion-item">
+                            <div className="suggestion-icon">
+                              {analysisResult.riskLevel === 'high' ? <AlertTriangle size={16} /> :
+                               analysisResult.riskLevel === 'medium' ? <Clock size={16} /> :
+                               <CheckCircle size={16} />}
+                            </div>
+                            <span>{suggestion}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Recommended Actions */}
                   <div className="action-recommendations">
-                    <h3>Recommended Actions</h3>
+                    <h3>General Security Actions</h3>
                     <div className="recommendations-grid">
-                      <div className="recommendation-item delete-recommendation">
-                        <Trash2 size={20} />
-                        <span>Delete this content immediately</span>
-                      </div>
-                      <div className="recommendation-item block-recommendation">
-                        <Ban size={20} />
-                        <span>Block the sender's address</span>
-                      </div>
+                      {analysisResult.riskLevel === 'high' && (
+                        <>
+                          <div className="recommendation-item delete-recommendation">
+                            <Trash2 size={20} />
+                            <span>Delete this content immediately</span>
+                          </div>
+                          <div className="recommendation-item block-recommendation">
+                            <Ban size={20} />
+                            <span>Block the sender's address</span>
+                          </div>
+                        </>
+                      )}
                       <div className="recommendation-item report-recommendation">
                         <Flag size={20} />
                         <span>Report to your IT security team</span>

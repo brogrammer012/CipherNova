@@ -6,6 +6,7 @@ import userRoutes from './routes/userRoutes.js';
 import communityRoutes from './routes/communityRoute.js';
 import urlRoutes from './routes/urlRoutes.js'; 
 import whoisRoutes from './routes/whoisRoutes.js';
+import detectionRoutes from './routes/detectionRoutes.js';
 
 dotenv.config({ path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env.local' });
 
@@ -28,6 +29,7 @@ app.use('/', userRoutes);
 app.use('/', communityRoutes);
 app.use('/', urlRoutes);
 app.use('/', whoisRoutes);
+app.use('/', detectionRoutes);
 
 // Simple test route
 app.get('/', (req, res) => {

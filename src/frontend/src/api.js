@@ -74,3 +74,15 @@ export async function whoisLookup(domain) {
 export async function getUserReports(userId) {
   return axiosInstance.get(`/reports/user/${userId}`);
 }
+
+export async function submitReport({ userId, url, detectionType }) {
+  return axiosInstance.post('/submit-report', {
+    userId,
+    url,
+    detectionType,
+  });
+}
+
+export async function checkEmail(email) {
+  return axiosInstance.post('/checkEmail', { email });
+}
