@@ -1,4 +1,3 @@
-// routes/urlRoutes.js
 import express from 'express';
 import {
   urlChecker,
