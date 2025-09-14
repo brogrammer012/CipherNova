@@ -71,3 +71,7 @@ export async function getCommunityPosts() {
 export async function getUserReports(userId) {
   return axiosInstance.get(`/reports/user/${userId}`);
 }
+
+export async function checkUrl(url) {
+  return axiosInstance.post('/check-url', { url });
+}
