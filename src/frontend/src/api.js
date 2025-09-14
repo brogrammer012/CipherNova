@@ -1,12 +1,3 @@
-// WHOIS lookup API
-export async function whoisLookup(domain) {
-  const token = localStorage.getItem('token');
-  return axiosInstance.post('/whois', { domain }, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
-}
 import axios from 'axios';
 
 const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
@@ -60,7 +51,7 @@ export async function getUserStats() {
 }
 
 export async function getUserXp() {
-  return axiosInstance.get('/user/xp');
+  return axiosInstance.get(`/user/xp/${userId}`);
 }
 
 // Community API endpoints
@@ -68,10 +59,18 @@ export async function getCommunityPosts() {
   return axiosInstance.get('/community');
 }
 
-export async function getUserReports(userId) {
-  return axiosInstance.get(`/reports/user/${userId}`);
+export async function getCommunityData() {
+  return axiosInstance.get('/community');
 }
 
 export async function checkUrl(url) {
   return axiosInstance.post('/check-url', { url });
+}
+
+export async function whoisLookup(domain) {
+  return axiosInstance.get(`/whois/${domain}`);
+}
+
+export async function getUserReports(userId) {
+  return axiosInstance.get(`/reports/user/${userId}`);
 }

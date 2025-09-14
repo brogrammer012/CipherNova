@@ -228,6 +228,35 @@ if (inputType !== "link") {
     const xpGained = 100;
     updateUserXP(xpGained);
 
+    // Determine domain safely
+    let domain = "N/A";
+    if (inputType === "link") {
+      try {
+        // Validate URL format first
+        let urlToCheck = inputValue.trim();
+        
+        // Add protocol if missing
+        if (!urlToCheck.startsWith('http://') && !urlToCheck.startsWith('https://')) {
+          urlToCheck = 'https://' + urlToCheck;
+        }
+        
+        // Fix common URL format issues
+        urlToCheck = urlToCheck.replace(/https\/\/:/g, 'https://');
+        urlToCheck = urlToCheck.replace(/http\/\/:/g, 'http://');
+        
+        const url = new URL(urlToCheck);
+        domain = url.hostname;
+      } catch (error) {
+        // If URL parsing fails, extract domain manually
+        const urlPattern = /(?:https?:\/\/)?(?:www\.)?([^\/\s]+)/i;
+        const match = inputValue.match(urlPattern);
+        domain = match ? match[1] : "Invalid URL";
+      }
+    } else if (inputType === "email") {
+      const emailParts = inputValue.split("@");
+      domain = emailParts.length > 1 ? emailParts[1] : "N/A";
+    }
+
     // Add report to community data in localStorage
     const newReport = {
       id: Date.now(),
@@ -236,14 +265,11 @@ if (inputType !== "link") {
           ? "Link"
           : inputType === "email"
           ? "Email"
+          : inputType === "domain"
+          ? "Domain"
           : "Phone",
       content: inputValue,
-      domain:
-        inputType === "link"
-          ? new URL(inputValue).hostname
-          : inputType === "email"
-          ? inputValue.split("@")[1]
-          : "N/A",
+      domain: domain,
       riskLevel: analysisResult?.riskLevel || "high",
       reports: 1,
       dateReported: new Date().toLocaleDateString(),
