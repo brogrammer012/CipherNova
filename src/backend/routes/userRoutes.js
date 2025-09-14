@@ -144,7 +144,7 @@ router.get('/user/xp/:userId', async (req, res) => {
 
 // Check phishing endpoint
 router.post('/checkPhishing', (req, res) => {
-    console.log('Phishing check endpoint hit');
+   // console.log('Phishing check endpoint hit');
     const { message } = req.body;
     if (!message || typeof message !== 'string') {
         return res.status(400).json({

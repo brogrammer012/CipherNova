@@ -80,3 +80,15 @@ export async function submitReport({ userId, url, detectionType }) {
     detectionType,
   });
 }
+
+export async function checkMail(email) {
+  return axiosInstance.post('/check-email', { email });
+}
+
+export async function checkBlackList(value) {
+  return axiosInstance.get('/check-blacklist', { params: { value } });
+}
+
+export async function addToBlackList(type, value) {
+  return axiosInstance.post('/add-to-blacklist', { type, value });
+}

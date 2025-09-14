@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { checkPhishing, whoisLookup } from '../api';
+import { checkPhishing, whoisLookup, checkMail, addToBlackList } from '../api';
 import DomainRegistrarInfo from '../components/DomainRegistrarInfo';
 import DomainImportantDates from '../components/DomainImportantDates';
 import { Link, useNavigate } from 'react-router-dom';
@@ -39,6 +39,8 @@ const DetectionToolPage = () => {
   const [quizResult, setQuizResult] = useState(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [blacklistLoading, setBlacklistLoading] = useState(false);
+  const [blacklistAdded, setBlacklistAdded] = useState({ email: false, domain: false });
 
   // Function to update user XP in localStorage
   const updateUserXP = (xpToAdd) => {
@@ -164,6 +166,55 @@ const DetectionToolPage = () => {
       return;
     }
 
+    // Email branch: call /check-email and present the quiz (uses existing quiz UI)
+    if (inputType === 'email') {
+      // create quiz for email (keeps current UX)
+      const quiz = generateQuiz(inputValue, 'email');
+      setQuizData(quiz);
+      setSelectedAnswer(null);
+
+      try {
+        const resp = await checkMail(inputValue);
+        const data = resp?.data || {};
+        // map small riskScore from backend to 0-100 scale (backend uses small integers)
+        const mappedScore = (typeof data.riskScore === 'number') ? Math.min(100, data.riskScore * 25) : 0;
+
+        setAnalysisResult({
+          riskLevel: (data.riskLevel || 'low').toLowerCase(),
+          riskScore: mappedScore,
+          flags: data.issues || [],
+          suggestions: [], // backend /check-email doesn't provide suggestions; keep empty
+          highlightedContent: inputValue,
+          detectedType: 'email',
+          // include raw response for debugging if needed
+          _raw: data
+        });
+      } catch (error) {
+        // fallback if API fails
+        setAnalysisResult({
+          riskLevel: 'high',
+          riskScore: 75,
+          flags: ['Failed to analyze email'],
+          suggestions: ['Verify sender via official channels'],
+          highlightedContent: inputValue,
+          detectedType: 'email'
+        });
+      }
+
+      // Award XP for email analysis
+      const analysisXP = 30;
+      updateUserXP(analysisXP);
+      setToastMessage(`Analysis complete! +${analysisXP} XP`);
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+        setIsAnalyzing(false);
+        // show quiz before results
+        setCurrentStep('quiz');
+      }, 1500);
+      return;
+    }
+
     // Message branch: call /checkPhishing and present a simple 2-option quiz before results
     if (inputType === 'message') {
       try {
@@ -203,7 +254,7 @@ const DetectionToolPage = () => {
       return;
     }
 
-    // Non-domain & non-message: existing quiz flow (email/link)
+    // Link and other (non-domain/message) flow — keep existing phishing-check + quiz flow
     // Generate quiz first
     const quiz = generateQuiz(inputValue, inputType);
     setQuizData(quiz);
@@ -310,6 +361,29 @@ const DetectionToolPage = () => {
       // Redirect to community page
       navigate('/community');
     }, 2000);
+  };
+
+  const handleAddToBlacklist = async (type, value) => {
+    if (!value) return;
+    setBlacklistLoading(true);
+    try {
+      await addToBlackList(type, value);
+      setBlacklistAdded(prev => ({
+        ...prev,
+        email: type === 'EMAIL' ? true : prev.email,
+        domain: type === 'URL' ? true : prev.domain
+      }));
+      setToastMessage('Added to blacklist');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
+    } catch (err) {
+      console.error('Failed to add to blacklist:', err);
+      setToastMessage('Failed to add to blacklist');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
+    } finally {
+      setBlacklistLoading(false);
+    }
   };
 
   const getAnalyzeButtonText = () => {
@@ -771,14 +845,46 @@ const DetectionToolPage = () => {
                   </div>
 
                   {/* Community Reporting */}
-                  <div className="community-reporting">
+                  <div className="community-reporting" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                     <button 
                       className="community-report-btn"
                       onClick={handleReportToCommunity}
+                      style={{ padding: '10px 14px', fontSize: 14, minWidth: 160, borderRadius: 8 }}
                     >
                       <Users size={20} />
                       <span>Report to Community</span>
                     </button>
+
+                    {/* Email-specific blacklist buttons */}
+                    {inputType === 'email' && (
+                      <div className="blacklist-actions" style={{ marginTop: 0, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                        <button
+                          className="blacklist-btn"
+                          onClick={() => handleAddToBlacklist('EMAIL', inputValue)}
+                          disabled={blacklistLoading || blacklistAdded.email}
+                          title="Add this email address to the community blacklist"
+                          style={{ padding: '10px 14px', fontSize: 14, minWidth: 180, borderRadius: 8 }}
+                        >
+                          <span>{blacklistAdded.email ? 'Email Blacklisted' : 'Add Email to Blacklist'}</span>
+                        </button>
+
+                        {inputValue.includes('@') && (() => {
+                          const domain = inputValue.split('@')[1];
+                          return (
+                            <button
+                              key="blacklist-domain"
+                              className="blacklist-btn secondary"
+                              onClick={() => handleAddToBlacklist('URL', domain)}
+                              disabled={blacklistLoading || blacklistAdded.domain}
+                              title="Add the sender domain to the community blacklist"
+                              style={{ padding: '10px 14px', fontSize: 14, minWidth: 200, borderRadius: 8 }}
+                            >
+                              <span>{blacklistAdded.domain ? 'Domain Blacklisted' : `Add Domain (${domain}) to Blacklist`}</span>
+                            </button>
+                          );
+                        })()}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
