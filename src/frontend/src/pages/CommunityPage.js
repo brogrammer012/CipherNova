@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import '../styles/pages/CommunityPage.css';
+import { getCommunityData } from '../api';
 
 const CommunityPage = () => {
   const navigate = useNavigate();
@@ -77,71 +78,44 @@ const CommunityPage = () => {
   useEffect(() => {
     const fetchCommunityData = async () => {
       try {
-        // Load community reports from localStorage and merge with mock data
+        // Load community reports from localStorage 
         const userReports = JSON.parse(localStorage.getItem('communityReports') || '[]');
         
-        // Mock data for demonstration
-        const mockReports = [
-          {
-            id: 1,
-            type: 'Email',
-            content: 'Urgent: Your account will be suspended unless you verify immediately',
-            domain: 'fake-bank.com',
-            riskLevel: 'high',
-            reports: 23,
-            dateReported: '2024-01-15',
-            upvotes: 15
-          },
-          {
-            id: 2,
-            type: 'Link',
-            content: 'https://suspicious-site.net/login',
-            domain: 'suspicious-site.net',
-            riskLevel: 'high',
-            reports: 18,
-            dateReported: '2024-01-14',
-            upvotes: 12
-          },
-          {
-            id: 3,
-            type: 'Phone',
-            content: '+1-555-SCAM-123 claiming to be from Microsoft',
-            domain: 'Unknown',
-            riskLevel: 'medium',
-            reports: 8,
-            dateReported: '2024-01-13',
-            upvotes: 5
-          },
-          {
-            id: 4,
-            type: 'Email',
-            content: 'You have won $1,000,000! Click here to claim',
-            domain: 'lottery-scam.org',
-            riskLevel: 'high',
-            reports: 31,
-            dateReported: '2024-01-12',
-            upvotes: 22
-          },
-          {
-            id: 5,
-            type: 'Link',
-            content: 'https://phishing-example.com/secure-login',
-            domain: 'phishing-example.com',
-            riskLevel: 'medium',
-            reports: 6,
-            dateReported: '2024-01-11',
-            upvotes: 3
-          }
-        ];
+        // Fetch reports from backend API
+        const { data: backendReports } = await getCommunityData();
+        
+        // Map backend response to frontend format with null checks
+        const mappedBackendReports = backendReports
+          .filter(report => report && report.content) // Filter out reports with no content
+          .map(report => ({
+            id: report.id,
+            type: report.type || 'Link', // Default to 'Link' if type is null
+            content: report.content || '', // Ensure content is never null/undefined
+            domain: (() => {
+              try {
+                // Extract domain from URL
+                const content = report.content || '';
+                const url = new URL(content.startsWith('http') ? content : `https://${content}`);
+                return url.hostname;
+              } catch {
+                return 'Unknown';
+              }
+            })(),
+            riskLevel: report.risk_level?.toLowerCase() || 'low',
+            reports: report.reports || 0,
+            dateReported: report.date || new Date().toLocaleDateString(),
+            upvotes: Math.floor(Math.random() * 10) // Random upvotes since not in backend
+          }));
 
-        // Combine user reports with mock data, user reports first
-        const allReports = [...userReports, ...mockReports];
+        // Combine user reports with backend reports, user reports first
+        const allReports = [...userReports, ...mappedBackendReports];
         setReportedContent(allReports);
 
+        // Calculate stats from real data
         const mockStats = {
-          totalReportsThisWeek: 89,
-          newThreatsIdentified: 12,
-          communityMembers: 1247
+          totalReportsThisWeek: allReports.length,
+          newThreatsIdentified: allReports.filter(r => r.riskLevel === 'high').length,
+          communityMembers: 1247 // Keep this as mock for now
         };
 
         const mockTopReporters = [
@@ -150,12 +124,22 @@ const CommunityPage = () => {
           { id: 3, name: 'PhishHunter', reports: 22, level: 'Intermediate', avatar: '🎯' }
         ];
 
-        setReportedContent(mockReports);
         setWeeklyStats(mockStats);
         setTopReporters(mockTopReporters);
         setLoading(false);
       } catch (error) {
         console.error('Failed to fetch community data:', error);
+        // Fallback to localStorage data only
+        const userReports = JSON.parse(localStorage.getItem('communityReports') || '[]');
+        setReportedContent(userReports);
+        
+        const fallbackStats = {
+          totalReportsThisWeek: userReports.length,
+          newThreatsIdentified: userReports.filter(r => r.riskLevel === 'high').length,
+          communityMembers: 1247
+        };
+        
+        setWeeklyStats(fallbackStats);
         setLoading(false);
       }
     };
@@ -199,12 +183,41 @@ const CommunityPage = () => {
     }
   };
 
-  // Calculate pagination
-  const filteredReports = reportedContent.filter(report => 
-    report.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    report.domain.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    report.type.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const getDetailedInfo = (report) => {
+    if (report.messageAnalysis) {
+      const threats = [];
+      if (report.messageAnalysis.hasUrgencyLanguage) threats.push("🚨 Urgent");
+      if (report.messageAnalysis.hasPrizeLanguage) threats.push("🎰 Prize");
+      if (report.messageAnalysis.requestsMoney) threats.push("💰 Money");
+      if (report.messageAnalysis.requestsPersonalInfo) threats.push("🔐 Personal Info");
+      if (report.messageAnalysis.impersonatesAuthority) threats.push("🏛️ Authority");
+      return threats.length > 0 ? threats.join(" ") : "";
+    }
+    
+    if (report.emailAnalysis) {
+      const threats = [];
+      if (report.emailAnalysis.isTyposquatting) threats.push("🚨 Typosquatting");
+      if (report.emailAnalysis.isTemporaryEmail) threats.push("⚠️ Temporary");
+      if (report.emailAnalysis.hasSuspiciousTld) threats.push("⚠️ Sus TLD");
+      return threats.length > 0 ? threats.join(" ") : "";
+    }
+    
+    return "";
+  };
+
+  // Calculate pagination with null checks
+  const filteredReports = reportedContent.filter(report => {
+    if (!report) return false;
+    
+    const content = (report.content || '').toLowerCase();
+    const domain = (report.domain || '').toLowerCase();
+    const type = (report.type || '').toLowerCase();
+    const searchLower = searchTerm.toLowerCase();
+    
+    return content.includes(searchLower) ||
+           domain.includes(searchLower) ||
+           type.includes(searchLower);
+  });
 
   const sortedReports = [...filteredReports].sort((a, b) => {
     if (a[sortConfig.key] < b[sortConfig.key]) {
@@ -387,20 +400,38 @@ const CommunityPage = () => {
                 <div key={report.id} className="table-row">
                   <div className="table-cell type">
                     <div className="type-indicator">
-                      {getTypeIcon(report.type)}
-                      <span>{report.type}</span>
+                      {getTypeIcon(report.type || 'unknown')}
+                      <span>{report.type || 'Unknown'}</span>
                     </div>
                   </div>
                   
                   <div className="table-cell content">
                     <div className="content-preview">
                       <span className="content-text">
-                        {report.content.length > 50 
-                          ? `${report.content.substring(0, 50)}...` 
-                          : report.content
+                        {(report.content || '').length > 50 
+                          ? `${(report.content || '').substring(0, 50)}...` 
+                          : (report.content || 'No content')
                         }
                       </span>
-                      <span className="domain-text">{report.domain}</span>
+                      <span className="domain-text">{report.domain || 'Unknown'}</span>
+                      {report.analysisSummary && (
+                        <span className="analysis-summary" style={{ 
+                          display: 'block', 
+                          fontSize: '0.8em', 
+                          color: '#888', 
+                          marginTop: '4px' 
+                        }}>
+                          {report.analysisSummary}
+                        </span>
+                      )}
+                      {getDetailedInfo(report) && (
+                        <div className="threat-indicators" style={{ 
+                          marginTop: '4px', 
+                          fontSize: '0.75em' 
+                        }}>
+                          {getDetailedInfo(report)}
+                        </div>
+                      )}
                     </div>
                   </div>
                   
@@ -408,21 +439,21 @@ const CommunityPage = () => {
                     <span 
                       className="risk-badge" 
                       style={{ 
-                        backgroundColor: getRiskColor(report.riskLevel)
+                        backgroundColor: getRiskColor(report.riskLevel || 'low')
                       }}
                     >
-                      {report.riskLevel.toUpperCase()}
+                      {(report.riskLevel || 'low').toUpperCase()}
                     </span>
                   </div>
                   
                   <div className="table-cell reports">
-                    <span className="report-count">{report.reports}</span>
+                    <span className="report-count">{report.reports || 0}</span>
                   </div>
                   
                   <div className="table-cell date">
                     <div className="date-info">
                       <Calendar size={14} />
-                      <span>{report.dateReported}</span>
+                      <span>{report.dateReported || 'Unknown'}</span>
                     </div>
                   </div>
                 </div>
@@ -465,5 +496,6 @@ const CommunityPage = () => {
     </div>
   );
 };
+
 
 export default CommunityPage;
